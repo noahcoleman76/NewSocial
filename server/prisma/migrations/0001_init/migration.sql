@@ -1,0 +1,2 @@
+-- Prisma migration placeholder. Run `npm run prisma:migrate` after installing dependencies and configuring PostgreSQL
+-- to generate the authoritative SQL from schema.prisma for your local environment.
