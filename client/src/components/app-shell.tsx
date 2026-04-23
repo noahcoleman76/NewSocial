@@ -1,11 +1,13 @@
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/app/auth-store';
 
 const linkClass = ({ isActive }: { isActive: boolean }) =>
   `rounded-full px-4 py-2 text-sm transition ${isActive ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-white'}`;
 
 export const AppShell = () => {
+  const navigate = useNavigate();
   const user = useAuthStore((state) => state.currentUser);
+  const logout = useAuthStore((state) => state.logout);
 
   const navItems = [
     ['/feed', 'Feed'],
@@ -16,7 +18,7 @@ export const AppShell = () => {
     ['/settings', 'Settings'],
   ];
 
-  if (user?.role === 'PARENT') {
+  if (user?.role === 'STANDARD') {
     navItems.push(['/family', 'Family']);
   }
 
@@ -40,6 +42,16 @@ export const AppShell = () => {
               </NavLink>
             ))}
           </nav>
+          <button
+            className="mt-6 rounded-full border border-slate-200 px-4 py-2 text-sm text-slate-600 transition hover:bg-white"
+            onClick={async () => {
+              await logout();
+              navigate('/login', { replace: true });
+            }}
+            type="button"
+          >
+            Log out
+          </button>
         </aside>
         <main className="flex-1">
           <Outlet />

@@ -29,14 +29,14 @@ describe('familyService', () => {
     expect(
       familyService.canEnableChildAccount(
         { id: 'child-1', role: 'CHILD', parentId: 'parent-1', accountStatus: 'DISABLED' },
-        { id: 'parent-1', role: 'PARENT', parentId: null, accountStatus: 'ACTIVE' },
+        { id: 'parent-1', role: 'STANDARD', parentId: null, accountStatus: 'ACTIVE' },
       ),
     ).toBe(true);
 
     expect(
       familyService.canEnableChildAccount(
         { id: 'child-1', role: 'CHILD', parentId: 'parent-1', accountStatus: 'DISABLED' },
-        { id: 'parent-1', role: 'PARENT', parentId: null, accountStatus: 'DISABLED' },
+        { id: 'parent-1', role: 'STANDARD', parentId: null, accountStatus: 'DISABLED' },
       ),
     ).toBe(false);
   });

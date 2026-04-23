@@ -3,8 +3,14 @@ import { env } from '@/config/env';
 
 type TokenPayload = {
   sub: string;
-  role: string;
+  role: 'STANDARD' | 'CHILD' | 'ADMIN';
   sessionId: string;
+};
+
+type ChildSetupTokenPayload = {
+  sub: string;
+  purpose: string;
+  accessCodeId: string;
 };
 
 export const signAccessToken = (payload: TokenPayload) =>
@@ -17,5 +23,12 @@ export const signRefreshToken = (payload: TokenPayload) =>
     expiresIn: env.JWT_REFRESH_TTL as jwt.SignOptions['expiresIn'],
   });
 
+export const signChildSetupToken = (payload: ChildSetupTokenPayload) =>
+  jwt.sign(payload, env.JWT_ACCESS_SECRET, {
+    expiresIn: '15m',
+  });
+
 export const verifyAccessToken = (token: string) => jwt.verify(token, env.JWT_ACCESS_SECRET) as TokenPayload;
 export const verifyRefreshToken = (token: string) => jwt.verify(token, env.JWT_REFRESH_SECRET) as TokenPayload;
+export const verifyChildSetupToken = (token: string) =>
+  jwt.verify(token, env.JWT_ACCESS_SECRET) as ChildSetupTokenPayload;

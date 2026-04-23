@@ -1,5 +1,7 @@
-import { FEED_WINDOW_DAYS } from '@shared/constants/domain';
-import type { FeedAdItem, FeedItem, FeedPostItem } from '@shared/types/domain';
+import * as domainConstants from '../../../../shared/constants/domain';
+import type { FeedAdItem, FeedItem, FeedPostItem } from '../../../../shared/types/domain';
+
+const { FEED_WINDOW_DAYS } = domainConstants;
 
 type FeedPostCandidate = Omit<FeedPostItem, 'type'> & {
   authorId: string;

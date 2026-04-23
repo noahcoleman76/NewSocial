@@ -1,0 +1,20 @@
+Use any of these seeded accounts from /C:/Users/noahco/OneDrive - NICE Ltd/Desktop/Noah Projects/NewSocial/server/prisma/seed.ts:
+
+  - Admin: admin@newsocial.local / Password123!
+  - Parent: parent@newsocial.local / Password123!
+  - Standard user: jamie@newsocial.local / Password123!
+  - Standard user: riley@newsocial.local / Password123!
+  - Standard user: alex@newsocial.local / Password123!
+
+  Child first-time access codes:
+
+  - child1@newsocial.local with code ABC12345
+  - child2@newsocial.local with code XYZ67890
+
+  These child accounts do not use a password until they go through /child-access and then set one.
+
+  Do not use these for normal login testing:
+
+  - disabled@newsocial.local
+  - disabled-parent@newsocial.local
+  - disabled-child@newsocial.local

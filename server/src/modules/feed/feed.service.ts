@@ -1,4 +1,4 @@
-import type { FeedAdItem, FeedItem } from '@shared/types/domain';
+import type { FeedAdItem, FeedItem } from '../../../../shared/types/domain';
 import { filterFeedPosts, injectFeedAds } from './feed.rules';
 
 type FeedInput = Parameters<typeof filterFeedPosts>[0];

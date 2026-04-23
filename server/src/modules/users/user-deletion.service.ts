@@ -1,9 +1,9 @@
-import type { ParentDeleteOutcome } from '@shared/types/domain';
+import type { ParentDeleteOutcome } from '../../../../shared/types/domain';
 import { resolveParentDeletionPlan } from '@/modules/family/family.rules';
 
 type DeleteUserOptions = {
   userId: string;
-  role: 'STANDARD' | 'PARENT' | 'CHILD' | 'ADMIN';
+  role: 'STANDARD' | 'CHILD' | 'ADMIN';
   childIds: string[];
   outcome?: ParentDeleteOutcome;
 };
@@ -16,7 +16,7 @@ export const buildUserDeletionPlan = ({ userId, role, childIds, outcome }: Delet
     accountStatus: 'ACTIVE' as const,
   }));
 
-  const familyPlan = role === 'PARENT' ? resolveParentDeletionPlan(children, outcome) : [];
+  const familyPlan = role === 'STANDARD' ? resolveParentDeletionPlan(children, outcome) : [];
 
   return {
     deleteUserId: userId,

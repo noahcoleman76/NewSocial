@@ -4,9 +4,11 @@ export const demoCurrentUser = {
   displayName: 'Morgan Parent',
   email: 'parent@newsocial.local',
   bio: 'Managing a calmer family space online.',
-  role: 'PARENT',
+  role: 'STANDARD',
+  familyCode: 'FAMILY123',
   accountStatus: 'ACTIVE',
   profileImageUrl: null,
+  hasChildren: true,
 } as const;
 
 export const demoFeed = [

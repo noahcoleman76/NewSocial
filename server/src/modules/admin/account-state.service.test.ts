@@ -5,7 +5,7 @@ import { accountStateService } from './account-state.service';
 describe('accountStateService', () => {
   it('cascades parent disablement to children', () => {
     const affected = accountStateService.resolveDisableCascade(
-      { id: 'parent-1', role: 'PARENT', accountStatus: 'ACTIVE', parentId: null },
+      { id: 'parent-1', role: 'STANDARD', accountStatus: 'ACTIVE', parentId: null },
       [{ id: 'child-1', role: 'CHILD', accountStatus: 'ACTIVE', parentId: 'parent-1' }],
     );
 
@@ -16,7 +16,7 @@ describe('accountStateService', () => {
     expect(() =>
       accountStateService.assertActiveAccount(
         { id: 'child-1', role: 'CHILD', accountStatus: 'ACTIVE', parentId: 'parent-1' },
-        { id: 'parent-1', role: 'PARENT', accountStatus: 'DISABLED', parentId: null },
+        { id: 'parent-1', role: 'STANDARD', accountStatus: 'DISABLED', parentId: null },
       ),
     ).toThrow(AppError);
   });

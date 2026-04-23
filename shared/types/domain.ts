@@ -1,4 +1,4 @@
-export const userRoles = ['STANDARD', 'PARENT', 'CHILD', 'ADMIN'] as const;
+export const userRoles = ['STANDARD', 'CHILD', 'ADMIN'] as const;
 export const accountStatuses = ['ACTIVE', 'DISABLED', 'DELETED'] as const;
 export const connectionRequestStatuses = ['PENDING', 'ACCEPTED', 'CANCELED', 'AUTO_ACCEPTED'] as const;
 export const notificationTypes = ['CONNECTION_ACCEPTED', 'POST_COMMENT'] as const;

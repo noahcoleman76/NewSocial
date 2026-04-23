@@ -1,4 +1,4 @@
-import type { UserRole } from '@shared/types/domain';
+import type { UserRole } from '../../../../shared/types/domain';
 import { AppError } from '@/lib/errors';
 
 export type AccountStateUser = {
@@ -9,7 +9,7 @@ export type AccountStateUser = {
 };
 
 export const resolveDisableCascade = (user: AccountStateUser, children: AccountStateUser[]) => {
-  if (user.role !== 'PARENT') {
+  if (user.role !== 'STANDARD') {
     return [user.id];
   }
 
@@ -22,6 +22,6 @@ export const assertActiveAccount = (user: AccountStateUser, parent?: AccountStat
   }
 
   if (user.role === 'CHILD' && (!parent || parent.accountStatus !== 'ACTIVE')) {
-    throw new AppError('PARENT_ACCOUNT_DISABLED', 'Child account requires an active parent', 403);
+    throw new AppError('FAMILY_MANAGER_ACCOUNT_DISABLED', 'Child account requires an active managing account', 403);
   }
 };

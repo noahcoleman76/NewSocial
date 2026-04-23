@@ -7,9 +7,10 @@ export const demoSnapshot: DashboardSnapshot = {
     displayName: 'Morgan Parent',
     email: 'parent@newsocial.local',
     bio: 'Managing a calmer family space online.',
-    role: 'PARENT',
+    role: 'STANDARD',
     accountStatus: 'ACTIVE',
     profileImageUrl: null,
+    hasChildren: true,
   },
   feed: [
     {

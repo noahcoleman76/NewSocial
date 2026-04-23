@@ -1,5 +1,5 @@
 import type { RequestHandler } from 'express';
-import type { UserRole } from '@shared/types/domain';
+import type { UserRole } from '../../../shared/types/domain';
 import { AppError } from '@/lib/errors';
 
 export const requireRole = (...roles: UserRole[]): RequestHandler => (req, _res, next) => {

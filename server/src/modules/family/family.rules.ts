@@ -1,4 +1,4 @@
-import type { ParentDeleteOutcome, UserRole } from '@shared/types/domain';
+import type { ParentDeleteOutcome, UserRole } from '../../../../shared/types/domain';
 import { AppError } from '@/lib/errors';
 
 export type FamilyUser = {
@@ -21,7 +21,7 @@ export const resolveParentDeletionPlan = (
   if (children.length > 0 && !outcome) {
     throw new AppError(
       'PARENT_DELETE_OUTCOME_REQUIRED',
-      'Parent deletion requires a child outcome selection',
+      'Account deletion requires a child outcome selection',
       422,
     );
   }

@@ -9,7 +9,6 @@ datasource db {
 
 enum UserRole {
   STANDARD
-  PARENT
   CHILD
   ADMIN
 }
@@ -53,6 +52,7 @@ model User {
   bio                String?
   profileImageUrl    String?
   role               UserRole
+  familyCode         String?         @unique
   accountStatus      AccountStatus   @default(ACTIVE)
   parentId           String?
   createdAt          DateTime        @default(now())

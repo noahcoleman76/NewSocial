@@ -1,5 +1,11 @@
+import dotenv from 'dotenv';
+import path from 'node:path';
 import bcrypt from 'bcrypt';
 import { PrismaClient } from '@prisma/client';
+
+dotenv.config({
+  path: path.resolve(process.cwd(), '../.env'),
+});
 
 const prisma = new PrismaClient();
 
@@ -40,7 +46,8 @@ async function main() {
       username: 'family.parent',
       displayName: 'Morgan Parent',
       passwordHash,
-      role: 'PARENT',
+      role: 'STANDARD',
+      familyCode: 'FAMILY123',
     },
   });
 
@@ -107,7 +114,8 @@ async function main() {
           username: 'disabled.parent',
           displayName: 'Disabled Parent',
           passwordHash,
-          role: 'PARENT',
+          role: 'STANDARD',
+          familyCode: 'DISABLED1',
           accountStatus: 'DISABLED',
         },
       }),

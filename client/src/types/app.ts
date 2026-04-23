@@ -9,6 +9,7 @@ export type CurrentUser = {
   role: UserRole;
   accountStatus: 'ACTIVE' | 'DISABLED' | 'DELETED';
   profileImageUrl: string | null;
+  hasChildren?: boolean;
 };
 
 export type ConnectionCard = {

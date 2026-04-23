@@ -1,10 +1,8 @@
 import multer from 'multer';
-import {
-  IMAGE_MIME_TYPES,
-  POST_IMAGE_MAX_BYTES,
-  PROFILE_IMAGE_MAX_BYTES,
-} from '@shared/constants/domain';
+import * as domainConstants from '../../../../shared/constants/domain';
 import { AppError } from '@/lib/errors';
+
+const { IMAGE_MIME_TYPES, POST_IMAGE_MAX_BYTES, PROFILE_IMAGE_MAX_BYTES } = domainConstants;
 
 const storage = multer.memoryStorage();
 
