@@ -1,5 +1,5 @@
-import { usersRepository } from './users.repository';
+import { connectionService } from '@/modules/connections/connection.service';
 
 export const usersService = {
-  searchUsers: (query: string) => usersRepository.search(query),
+  searchUsers: (requesterId: string, query: string) => connectionService.searchUsers(requesterId, query),
 };

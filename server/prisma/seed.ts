@@ -164,10 +164,36 @@ async function main() {
 
   await prisma.connection.createMany({
     data: [
-      { userAId: [parent.id, userA.id].sort()[0], userBId: [parent.id, userA.id].sort()[1] },
-      { userAId: [userA.id, userB.id].sort()[0], userBId: [userA.id, userB.id].sort()[1] },
-      { userAId: [childOne.id, userA.id].sort()[0], userBId: [childOne.id, userA.id].sort()[1] },
-      { userAId: [childTwo.id, userB.id].sort()[0], userBId: [childTwo.id, userB.id].sort()[1] },
+      {
+        userAId: [parent.id, userA.id].sort()[0],
+        userBId: [parent.id, userA.id].sort()[1],
+        status: 'ACTIVE',
+        approvedAt: new Date(),
+      },
+      {
+        userAId: [userA.id, userB.id].sort()[0],
+        userBId: [userA.id, userB.id].sort()[1],
+        status: 'ACTIVE',
+        approvedAt: new Date(),
+      },
+      {
+        userAId: [childOne.id, userA.id].sort()[0],
+        userBId: [childOne.id, userA.id].sort()[1],
+        status: 'ACTIVE',
+        approvedAt: new Date(),
+      },
+      {
+        userAId: [childTwo.id, userB.id].sort()[0],
+        userBId: [childTwo.id, userB.id].sort()[1],
+        status: 'ACTIVE',
+        approvedAt: new Date(),
+      },
+      {
+        userAId: [childOne.id, userC.id].sort()[0],
+        userBId: [childOne.id, userC.id].sort()[1],
+        status: 'PENDING_MANAGER_APPROVAL',
+        approvingManagerId: parent.id,
+      },
     ],
   });
 

@@ -18,6 +18,31 @@ describe('buildConnectionRequestPlan', () => {
     expect(outcome.connection).toEqual({
       userAId: 'user-a',
       userBId: 'user-b',
+      status: 'ACTIVE',
+      approvingManagerId: null,
+    });
+  });
+
+  it('requires manager approval when a child connection becomes mutual', () => {
+    const outcome = buildConnectionRequestPlan({
+      senderId: 'child-a',
+      receiverId: 'user-b',
+      reverseRequest: {
+        id: 'req-1',
+        senderId: 'user-b',
+        receiverId: 'child-a',
+        status: 'PENDING',
+      },
+      managerApprovalRequired: true,
+      approvingManagerId: 'manager-1',
+    });
+
+    expect(outcome.mode).toBe('AUTO_ACCEPT');
+    expect(outcome.connection).toEqual({
+      userAId: 'child-a',
+      userBId: 'user-b',
+      status: 'PENDING_MANAGER_APPROVAL',
+      approvingManagerId: 'manager-1',
     });
   });
 });

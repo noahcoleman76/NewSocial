@@ -2,6 +2,7 @@ import type { Express } from 'express';
 import express from 'express';
 import { adminRouter } from '@/modules/admin/admin.routes';
 import { authRouter } from '@/modules/auth/auth.routes';
+import { connectionRouter } from '@/modules/connections/connection.routes';
 import { familyRouter } from '@/modules/family/family.routes';
 import { feedRouter } from '@/modules/feed/feed.routes';
 import { notificationsRouter } from '@/modules/notifications/notifications.routes';
@@ -15,6 +16,7 @@ export const registerRoutes = (app: Express) => {
   });
 
   api.use('/auth', authRouter);
+  api.use('/connections', connectionRouter);
   api.use('/users', usersRouter);
   api.use('/feed', feedRouter);
   api.use('/notifications', notificationsRouter);

@@ -15,6 +15,7 @@ type FamilyChild = {
   displayName: string;
   email: string;
   createdAt: string;
+  pendingApprovalCount?: number;
 };
 
 type FamilyChildrenResponse = {
@@ -26,6 +27,74 @@ type FamilyChildResponse = {
     bio: string | null;
     profileImageUrl: string | null;
   };
+};
+
+type FamilyMessageAuthor = {
+  id: string | null;
+  name: string;
+};
+
+type FamilyMessage = {
+  id: string;
+  body: string | null;
+  createdAt: string;
+  author: FamilyMessageAuthor;
+  imageCount: number;
+};
+
+type FamilyMessageConversation = {
+  id: string;
+  participant: {
+    id: string;
+    username: string;
+    displayName: string;
+    profileImageUrl: string | null;
+    role: 'STANDARD' | 'CHILD' | 'ADMIN';
+    isFamilyLinked: boolean;
+    deleted: boolean;
+  } | null;
+  unread: boolean;
+  messages: FamilyMessage[];
+};
+
+type FamilyChildMessagesResponse = {
+  child: FamilyChild & {
+    bio: string | null;
+    profileImageUrl: string | null;
+  };
+  conversations: FamilyMessageConversation[];
+};
+
+type FamilyConnectionUser = {
+  id: string;
+  username: string;
+  displayName: string;
+  profileImageUrl: string | null;
+  role: 'STANDARD' | 'CHILD' | 'ADMIN';
+  isFamilyLinked: boolean;
+};
+
+type FamilyConnectionItem = {
+  id: string;
+  user: FamilyConnectionUser;
+  createdAt: string;
+};
+
+type FamilyConnectionRequestItem = {
+  id: string;
+  user: FamilyConnectionUser;
+  createdAt: string;
+};
+
+type FamilyChildConnectionsResponse = {
+  child: FamilyChild & {
+    bio: string | null;
+    profileImageUrl: string | null;
+  };
+  connections: FamilyConnectionItem[];
+  pendingApprovals: FamilyConnectionRequestItem[];
+  incomingRequests: FamilyConnectionRequestItem[];
+  outgoingRequests: FamilyConnectionRequestItem[];
 };
 
 export const FamilyPage = () => {
@@ -91,6 +160,12 @@ export const FamilyPage = () => {
                 <p className="font-medium text-slate-900">{child.displayName}</p>
                 <p className="mt-1 text-sm text-slate-500">@{child.username}</p>
                 <p className="mt-3 text-sm text-slate-600">{child.email}</p>
+                {child.pendingApprovalCount ? (
+                  <p className="mt-2 text-xs uppercase tracking-[0.18em] text-amber-700">
+                    {child.pendingApprovalCount} parent approval
+                    {child.pendingApprovalCount === 1 ? '' : 's'} pending
+                  </p>
+                ) : null}
                 <p className="mt-2 text-xs uppercase tracking-[0.18em] text-slate-400">
                   Joined {new Date(child.createdAt).toLocaleDateString()}
                 </p>
@@ -195,6 +270,18 @@ export const FamilyChildPage = () => {
               {childQuery.data.bio ? <p className="mt-4 text-sm leading-7 text-slate-600">{childQuery.data.bio}</p> : null}
             </div>
             <div className="flex flex-wrap gap-3">
+              <Link
+                className="rounded-full border border-slate-200 px-5 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                to={`/family/child/${childQuery.data.id}/messages`}
+              >
+                View child messages
+              </Link>
+              <Link
+                className="rounded-full border border-slate-200 px-5 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                to={`/family/child/${childQuery.data.id}/connections`}
+              >
+                View child connections
+              </Link>
               <button
                 className="rounded-full border border-amber-200 px-5 py-3 text-sm font-medium text-amber-700 disabled:opacity-60"
                 disabled={releaseMutation.isPending || deleteMutation.isPending}
@@ -232,19 +319,255 @@ export const FamilyChildPage = () => {
   );
 };
 
-export const FamilyChildMessagesPage = () => (
-  <PageCard title="Child messages" subtitle="Family manager visibility is read-only and covers all direct messages.">
-    <div className="rounded-[1.5rem] border border-slate-200 p-4">
-      <p className="text-sm text-slate-500">Jamie Brooks</p>
-      <p className="mt-2">Checking in after school.</p>
-    </div>
-  </PageCard>
-);
+export const FamilyChildMessagesPage = () => {
+  const { childId = '' } = useParams();
 
-export const FamilyChildConnectionsPage = () => (
-  <PageCard title="Child connections" subtitle="Managers can review, request, and cancel child connection requests.">
-    <div className="rounded-[1.5rem] border border-slate-200 p-4 text-sm text-slate-600">
-      Family-linked connection requests disclose that family visibility may apply.
+  const messagesQuery = useQuery({
+    queryKey: ['family', 'children', childId, 'messages'],
+    queryFn: async () => {
+      const { data } = await api.get<FamilyChildMessagesResponse>(`/family/children/${childId}/messages`);
+      return data;
+    },
+    enabled: Boolean(childId),
+  });
+
+  return (
+    <div className="space-y-6">
+      <PageCard
+        title="Child messages"
+        subtitle="Family manager visibility is read-only and covers all direct messages for this linked child account."
+      >
+        {messagesQuery.isLoading ? <p className="text-sm text-slate-500">Loading child messages...</p> : null}
+        {messagesQuery.isError ? <p className="text-sm text-rose-600">Could not load child messages right now.</p> : null}
+        {messagesQuery.data ? (
+          <div className="space-y-5">
+            <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-5">
+              <p className="font-medium text-slate-900">{messagesQuery.data.child.displayName}</p>
+              <p className="mt-1 text-sm text-slate-500">@{messagesQuery.data.child.username}</p>
+              <p className="mt-3 text-sm text-slate-600">
+                Read-only message visibility for linked child accounts. No read receipts or manager replies.
+              </p>
+            </div>
+            {messagesQuery.data.conversations.length ? (
+              <div className="space-y-4">
+                {messagesQuery.data.conversations.map((conversation) => (
+                  <div key={conversation.id} className="rounded-[1.5rem] border border-slate-200 p-5">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <p className="font-medium text-slate-900">
+                          {conversation.participant?.displayName ?? 'Deleted User'}
+                        </p>
+                        <p className="mt-1 text-sm text-slate-500">
+                          {conversation.participant?.deleted
+                            ? 'This conversation includes a deleted user.'
+                            : conversation.participant?.isFamilyLinked
+                              ? `@${conversation.participant.username} · Family-linked account`
+                              : conversation.participant
+                                ? `@${conversation.participant.username}`
+                                : 'Account removed'}
+                        </p>
+                      </div>
+                      {conversation.unread ? (
+                        <span className="rounded-full bg-slate-900 px-3 py-1 text-xs uppercase tracking-[0.16em] text-white">
+                          Unread
+                        </span>
+                      ) : null}
+                    </div>
+                    <div className="mt-4 space-y-3">
+                      {conversation.messages.map((message) => (
+                        <div key={message.id} className="rounded-[1.25rem] border border-slate-200 bg-slate-50 p-4">
+                          <div className="flex flex-wrap items-center justify-between gap-3">
+                            <p className="text-sm font-medium text-slate-700">{message.author.name}</p>
+                            <p className="text-xs uppercase tracking-[0.16em] text-slate-400">
+                              {new Date(message.createdAt).toLocaleString()}
+                            </p>
+                          </div>
+                          <p className="mt-2 text-sm leading-7 text-slate-600">
+                            {message.body ?? 'Image-only message'}
+                          </p>
+                          {message.imageCount > 0 ? (
+                            <p className="mt-2 text-xs uppercase tracking-[0.16em] text-slate-400">
+                              {message.imageCount} image{message.imageCount === 1 ? '' : 's'}
+                            </p>
+                          ) : null}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 p-5 text-sm leading-7 text-slate-600">
+                This child account does not have any conversations yet.
+              </div>
+            )}
+          </div>
+        ) : null}
+      </PageCard>
     </div>
-  </PageCard>
-);
+  );
+};
+
+export const FamilyChildConnectionsPage = () => {
+  const { childId = '' } = useParams();
+  const queryClient = useQueryClient();
+
+  const connectionsQuery = useQuery({
+    queryKey: ['family', 'children', childId, 'connections'],
+    queryFn: async () => {
+      const { data } = await api.get<FamilyChildConnectionsResponse>(`/family/children/${childId}/connections`);
+      return data;
+    },
+    enabled: Boolean(childId),
+  });
+
+  const approveMutation = useMutation({
+    mutationFn: async (connectionId: string) => {
+      await api.post(`/family/children/${childId}/connections/${connectionId}/approve`);
+    },
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['family', 'children'] }),
+        queryClient.invalidateQueries({ queryKey: ['family', 'children', childId, 'connections'] }),
+      ]);
+    },
+  });
+
+  const rejectMutation = useMutation({
+    mutationFn: async (connectionId: string) => {
+      await api.post(`/family/children/${childId}/connections/${connectionId}/reject`);
+    },
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['family', 'children'] }),
+        queryClient.invalidateQueries({ queryKey: ['family', 'children', childId, 'connections'] }),
+      ]);
+    },
+  });
+
+  return (
+    <div className="space-y-6">
+      <PageCard
+        title="Child connections"
+        subtitle="Review accepted connections and pending requests for this linked child account."
+      >
+        {connectionsQuery.isLoading ? <p className="text-sm text-slate-500">Loading child connections...</p> : null}
+        {connectionsQuery.isError ? (
+          <p className="text-sm text-rose-600">Could not load child connections right now.</p>
+        ) : null}
+        {connectionsQuery.data ? (
+          <div className="space-y-6">
+            <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-5">
+              <p className="font-medium text-slate-900">{connectionsQuery.data.child.displayName}</p>
+              <p className="mt-1 text-sm text-slate-500">@{connectionsQuery.data.child.username}</p>
+              <p className="mt-3 text-sm text-slate-600">
+                Family-linked requests require manager approval before the child can officially connect or see the other account's posts in profile and feed.
+              </p>
+            </div>
+            <section className="space-y-3">
+              <h3 className="text-sm font-medium uppercase tracking-[0.18em] text-slate-500">Pending parent approval</h3>
+              {connectionsQuery.data.pendingApprovals.length ? (
+                <div className="grid gap-3">
+                  {connectionsQuery.data.pendingApprovals.map((request) => (
+                    <div key={request.id} className="rounded-[1.5rem] border border-amber-200 bg-amber-50/50 p-4">
+                      <p className="font-medium text-slate-900">{request.user.displayName}</p>
+                      <p className="mt-1 text-sm text-slate-500">@{request.user.username}</p>
+                      <p className="mt-2 text-xs uppercase tracking-[0.16em] text-slate-400">
+                        Waiting since {new Date(request.createdAt).toLocaleDateString()}
+                      </p>
+                      <div className="mt-4 flex flex-wrap gap-3">
+                        <button
+                          className="rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 disabled:opacity-60"
+                          disabled={approveMutation.isPending || rejectMutation.isPending}
+                          onClick={() => approveMutation.mutate(request.id)}
+                          type="button"
+                        >
+                          {approveMutation.isPending ? 'Approving...' : 'Approve connection'}
+                        </button>
+                        <button
+                          className="rounded-full border border-rose-200 px-4 py-2 text-sm font-medium text-rose-700 disabled:opacity-60"
+                          disabled={approveMutation.isPending || rejectMutation.isPending}
+                          onClick={() => rejectMutation.mutate(request.id)}
+                          type="button"
+                        >
+                          {rejectMutation.isPending ? 'Rejecting...' : 'Reject connection'}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-slate-500">No child connections are waiting for your approval right now.</p>
+              )}
+              {approveMutation.isError ? (
+                <p className="text-sm text-rose-600">Could not approve this child connection right now.</p>
+              ) : null}
+              {rejectMutation.isError ? (
+                <p className="text-sm text-rose-600">Could not reject this child connection right now.</p>
+              ) : null}
+            </section>
+            <section className="space-y-3">
+              <h3 className="text-sm font-medium uppercase tracking-[0.18em] text-slate-500">Connected accounts</h3>
+              {connectionsQuery.data.connections.length ? (
+                <div className="grid gap-3 md:grid-cols-2">
+                  {connectionsQuery.data.connections.map((connection) => (
+                    <div key={connection.id} className="rounded-[1.5rem] border border-slate-200 p-4">
+                      <p className="font-medium text-slate-900">{connection.user.displayName}</p>
+                      <p className="mt-1 text-sm text-slate-500">@{connection.user.username}</p>
+                      {connection.user.isFamilyLinked ? (
+                        <p className="mt-2 text-xs uppercase tracking-[0.16em] text-slate-400">Family-linked account</p>
+                      ) : null}
+                      <p className="mt-2 text-xs uppercase tracking-[0.16em] text-slate-400">
+                        Connected {new Date(connection.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 p-5 text-sm leading-7 text-slate-600">
+                  This child account does not have any active connections yet.
+                </div>
+              )}
+            </section>
+            <section className="space-y-3">
+              <h3 className="text-sm font-medium uppercase tracking-[0.18em] text-slate-500">Incoming requests</h3>
+              {connectionsQuery.data.incomingRequests.length ? (
+                <div className="grid gap-3 md:grid-cols-2">
+                  {connectionsQuery.data.incomingRequests.map((request) => (
+                    <div key={request.id} className="rounded-[1.5rem] border border-slate-200 p-4">
+                      <p className="font-medium text-slate-900">{request.user.displayName}</p>
+                      <p className="mt-1 text-sm text-slate-500">@{request.user.username}</p>
+                      <p className="mt-2 text-xs uppercase tracking-[0.16em] text-slate-400">
+                        Requested {new Date(request.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-slate-500">No incoming requests right now.</p>
+              )}
+            </section>
+            <section className="space-y-3">
+              <h3 className="text-sm font-medium uppercase tracking-[0.18em] text-slate-500">Outgoing requests</h3>
+              {connectionsQuery.data.outgoingRequests.length ? (
+                <div className="grid gap-3 md:grid-cols-2">
+                  {connectionsQuery.data.outgoingRequests.map((request) => (
+                    <div key={request.id} className="rounded-[1.5rem] border border-slate-200 p-4">
+                      <p className="font-medium text-slate-900">{request.user.displayName}</p>
+                      <p className="mt-1 text-sm text-slate-500">@{request.user.username}</p>
+                      <p className="mt-2 text-xs uppercase tracking-[0.16em] text-slate-400">
+                        Sent {new Date(request.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-slate-500">No outgoing requests right now.</p>
+              )}
+            </section>
+          </div>
+        ) : null}
+      </PageCard>
+    </div>
+  );
+};

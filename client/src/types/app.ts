@@ -20,6 +20,37 @@ export type ConnectionCard = {
   isChildAccount?: boolean;
 };
 
+export type ConnectionRelationship =
+  | 'NONE'
+  | 'CONNECTED'
+  | 'OUTGOING_REQUEST'
+  | 'INCOMING_REQUEST'
+  | 'PENDING_MANAGER_APPROVAL';
+
+export type SearchUser = {
+  id: string;
+  username: string;
+  displayName: string;
+  profileImageUrl: string | null;
+  isFamilyLinked: boolean;
+  relationship: ConnectionRelationship;
+  requestId: string | null;
+};
+
+export type ConnectionListItem = {
+  id: string;
+  createdAt: string;
+  user: {
+    id: string;
+    username: string;
+    displayName: string;
+    profileImageUrl: string | null;
+    isFamilyLinked: boolean;
+  };
+};
+
+export type ConnectionRequestListItem = ConnectionListItem;
+
 export type ConversationSummary = {
   id: string;
   title: string;

@@ -26,6 +26,12 @@ enum ConnectionRequestStatus {
   AUTO_ACCEPTED
 }
 
+enum ConnectionStatus {
+  ACTIVE
+  PENDING_MANAGER_APPROVAL
+  REJECTED
+}
+
 enum NotificationType {
   CONNECTION_ACCEPTED
   POST_COMMENT
@@ -112,12 +118,16 @@ model ConnectionRequest {
 }
 
 model Connection {
-  id        String   @id @default(cuid())
-  userAId   String
-  userBId   String
-  createdAt DateTime @default(now())
-  userA     User     @relation("ConnectionUserA", fields: [userAId], references: [id], onDelete: Cascade)
-  userB     User     @relation("ConnectionUserB", fields: [userBId], references: [id], onDelete: Cascade)
+  id                 String           @id @default(cuid())
+  userAId            String
+  userBId            String
+  status             ConnectionStatus @default(ACTIVE)
+  approvingManagerId String?
+  approvedAt         DateTime?
+  rejectedAt         DateTime?
+  createdAt          DateTime         @default(now())
+  userA              User             @relation("ConnectionUserA", fields: [userAId], references: [id], onDelete: Cascade)
+  userB              User             @relation("ConnectionUserB", fields: [userBId], references: [id], onDelete: Cascade)
 
   @@unique([userAId, userBId])
 }

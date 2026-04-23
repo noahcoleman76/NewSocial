@@ -14,10 +14,14 @@ export const resolveConnectionRequestOutcome = ({
   senderId,
   receiverId,
   reverseRequest,
+  managerApprovalRequired = false,
+  approvingManagerId = null,
 }: {
   senderId: string;
   receiverId: string;
   reverseRequest: ConnectionRequestShape | null;
+  managerApprovalRequired?: boolean;
+  approvingManagerId?: string | null;
 }) => {
   if (senderId === receiverId) {
     throw new AppError('INVALID_CONNECTION', 'Users cannot connect with themselves', 422);
@@ -28,7 +32,12 @@ export const resolveConnectionRequestOutcome = ({
 
     return {
       mode: 'AUTO_ACCEPT',
-      connection: { userAId, userBId },
+      connection: {
+        userAId,
+        userBId,
+        status: managerApprovalRequired ? ('PENDING_MANAGER_APPROVAL' as const) : ('ACTIVE' as const),
+        approvingManagerId: managerApprovalRequired ? approvingManagerId : null,
+      },
       updates: [
         { requestId: reverseRequest.id, status: 'AUTO_ACCEPTED' as const },
         { senderId, receiverId, status: 'AUTO_ACCEPTED' as const },
