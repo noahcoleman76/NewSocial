@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { PageCard } from '@/components/page-card';
@@ -112,7 +113,9 @@ export const SearchPage = () => {
         {searchQuery.data?.map((user) => (
           <div key={user.id} className="flex flex-wrap items-center justify-between gap-4 rounded-[1.5rem] border border-slate-200 p-4">
             <div>
-              <p className="font-medium">{user.displayName}</p>
+              <Link className="font-medium text-slate-900 hover:underline" to={`/profile/${user.username}`}>
+                {user.displayName}
+              </Link>
               <p className="text-sm text-slate-500">@{user.username}</p>
               {user.isFamilyLinked ? (
                 <p className="mt-2 text-xs uppercase tracking-[0.16em] text-amber-700">

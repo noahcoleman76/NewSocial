@@ -12,4 +12,13 @@ export const usersController = {
     const users = await usersService.searchUsers(req.auth.sub, q);
     res.json({ users });
   },
+  getProfile: async (req: Request, res: Response) => {
+    if (!req.auth?.sub) {
+      throw new AppError('UNAUTHORIZED', 'Authentication required', 401);
+    }
+
+    const username = Array.isArray(req.params.username) ? req.params.username[0] : req.params.username;
+    const profile = await usersService.getProfile(req.auth.sub, username);
+    res.json(profile);
+  },
 };

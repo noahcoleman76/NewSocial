@@ -11,6 +11,35 @@ const relationshipUserSelect = {
 } as const;
 
 export const connectionRepository = {
+  findDirectFamilyRelation: (userOneId: string, userTwoId: string) =>
+    prisma.user.findFirst({
+      where: {
+        OR: [
+          {
+            id: userOneId,
+            parentId: userTwoId,
+            role: 'CHILD',
+            accountStatus: 'ACTIVE',
+            parent: {
+              accountStatus: 'ACTIVE',
+            },
+          },
+          {
+            id: userTwoId,
+            parentId: userOneId,
+            role: 'CHILD',
+            accountStatus: 'ACTIVE',
+            parent: {
+              accountStatus: 'ACTIVE',
+            },
+          },
+        ],
+      },
+      select: {
+        id: true,
+      },
+    }),
+
   searchUsers: (requesterId: string, query: string) =>
     prisma.user.findMany({
       where: {
@@ -100,6 +129,56 @@ export const connectionRepository = {
         },
       },
     }),
+
+  listActiveConnectionIds: async (userId: string) => {
+    const connections = await prisma.connection.findMany({
+      where: {
+        status: 'ACTIVE',
+        OR: [{ userAId: userId }, { userBId: userId }],
+      },
+      select: {
+        userAId: true,
+        userBId: true,
+      },
+    });
+
+    return connections.map((connection) => (connection.userAId === userId ? connection.userBId : connection.userAId));
+  },
+
+  listFamilyConnectionIds: async (userId: string) => {
+    const [parent, children] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          parentId: true,
+          parent: {
+            select: {
+              id: true,
+              accountStatus: true,
+            },
+          },
+        },
+      }),
+      prisma.user.findMany({
+        where: {
+          parentId: userId,
+          role: 'CHILD',
+          accountStatus: 'ACTIVE',
+        },
+        select: {
+          id: true,
+        },
+      }),
+    ]);
+
+    const familyIds = children.map((child) => child.id);
+
+    if (parent?.parentId && parent.parent?.accountStatus === 'ACTIVE') {
+      familyIds.push(parent.parentId);
+    }
+
+    return familyIds;
+  },
 
   listPendingApprovalConnections: (userId: string) =>
     prisma.connection.findMany({
@@ -206,6 +285,15 @@ export const connectionRepository = {
           userAId,
           userBId,
         },
+      },
+    }),
+
+  removeActiveConnection: (userAId: string, userBId: string) =>
+    prisma.connection.deleteMany({
+      where: {
+        userAId,
+        userBId,
+        status: 'ACTIVE',
       },
     }),
 

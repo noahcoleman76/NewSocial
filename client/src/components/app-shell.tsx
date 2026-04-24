@@ -1,5 +1,6 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/app/auth-store';
+import { useNotifications } from '@/features/notifications/use-notifications';
 
 const linkClass = ({ isActive }: { isActive: boolean }) =>
   `rounded-full px-4 py-2 text-sm transition ${isActive ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-white'}`;
@@ -8,6 +9,8 @@ export const AppShell = () => {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.currentUser);
   const logout = useAuthStore((state) => state.logout);
+  const notificationsQuery = useNotifications();
+  const hasUnreadNotifications = Boolean(notificationsQuery.data?.some((notification) => !notification.read));
 
   const navItems = [
     ['/feed', 'Feed'],
@@ -32,13 +35,22 @@ export const AppShell = () => {
         <aside className="rounded-[2rem] border border-white/80 bg-white/80 p-4 shadow-[0_20px_80px_-50px_rgba(15,23,42,0.45)] backdrop-blur lg:w-72">
           <div className="mb-8">
             <p className="text-xs uppercase tracking-[0.28em] text-slate-400">NewSocial</p>
-            <h1 className="mt-2 text-2xl font-semibold">{user?.displayName ?? 'Private network'}</h1>
-            <p className="mt-1 text-sm text-slate-500">@{user?.username}</p>
+            <Link className="block" to={user ? `/profile/${user.username}` : '/feed'}>
+              <h1 className="mt-2 text-2xl font-semibold">{user?.displayName ?? 'Private network'}</h1>
+              <p className="mt-1 text-sm text-slate-500">@{user?.username}</p>
+            </Link>
           </div>
           <nav className="flex flex-wrap gap-2 lg:flex-col">
             {navItems.map(([href, label]) => (
               <NavLink key={href} to={href} className={linkClass}>
-                {label}
+                <span className="inline-flex items-center gap-2">
+                  {label}
+                  {href === '/notifications' && hasUnreadNotifications ? (
+                    <span aria-label="Unread notifications" className="text-base leading-none">
+                      *
+                    </span>
+                  ) : null}
+                </span>
               </NavLink>
             ))}
           </nav>

@@ -18,6 +18,9 @@ const mapRelationshipUser = (user: {
   isFamilyLinked: user.role === 'CHILD' || Boolean(user.parentId),
 });
 
+const isDirectFamilyConnection = (userOne: { id: string; parentId: string | null }, userTwo: { id: string; parentId: string | null }) =>
+  userOne.parentId === userTwo.id || userTwo.parentId === userOne.id;
+
 const resolveManagerApproval = (users: Array<{ role: 'STANDARD' | 'CHILD' | 'ADMIN'; parentId: string | null }>) => {
   const childUser = users.find((user) => user.role === 'CHILD' && user.parentId);
 
@@ -60,10 +63,11 @@ export const connectionService = {
       return [];
     }
 
-    await ensureActiveUser(requesterId);
+    const requester = await ensureActiveUser(requesterId);
     const users = await connectionRepository.searchUsers(requesterId, trimmed);
 
     return users.map((user) => {
+      const familyConnection = isDirectFamilyConnection(requester, user);
       const connection = user.connectionsA[0] ?? user.connectionsB[0] ?? null;
       const outgoingRequest = user.incomingRequests[0] ?? null;
       const incomingRequest = user.outgoingRequests[0] ?? null;
@@ -75,7 +79,7 @@ export const connectionService = {
         | 'INCOMING_REQUEST'
         | 'PENDING_MANAGER_APPROVAL' = 'NONE';
 
-      if (connection?.status === 'ACTIVE') {
+      if (familyConnection || connection?.status === 'ACTIVE') {
         relationship = 'CONNECTED';
       } else if (connection?.status === 'PENDING_MANAGER_APPROVAL') {
         relationship = 'PENDING_MANAGER_APPROVAL';
@@ -87,6 +91,7 @@ export const connectionService = {
 
       return {
         ...mapRelationshipUser(user),
+        isFamilyConnection: familyConnection,
         relationship,
         requestId: outgoingRequest?.id ?? incomingRequest?.id ?? null,
       };
@@ -94,25 +99,52 @@ export const connectionService = {
   },
 
   listConnections: async (userId: string) => {
-    await ensureActiveUser(userId);
+    const user = await ensureActiveUser(userId);
 
-    const [connections, pendingApprovals, incomingRequests, outgoingRequests] = await Promise.all([
+    const [connections, familyConnectionIds, pendingApprovals, incomingRequests, outgoingRequests] = await Promise.all([
       connectionRepository.listActiveConnections(userId),
+      connectionRepository.listFamilyConnectionIds(userId),
       connectionRepository.listPendingApprovalConnections(userId),
       connectionRepository.listIncomingRequests(userId),
       connectionRepository.listOutgoingRequests(userId),
     ]);
 
-    return {
-      connections: connections.map((connection) => {
-        const otherUser = connection.userAId === userId ? connection.userB : connection.userA;
+    const familyConnections = await Promise.all(
+      familyConnectionIds.map(async (familyUserId) => {
+        const familyUser = await ensureActiveUser(familyUserId);
 
         return {
-          id: connection.id,
-          createdAt: connection.createdAt,
-          user: mapRelationshipUser(otherUser),
+          id: `family-${userId}-${familyUser.id}`,
+          createdAt: familyUser.createdAt,
+          user: {
+            ...mapRelationshipUser(familyUser),
+            isFamilyConnection: true,
+          },
         };
       }),
+    );
+
+    return {
+      connections: [
+        ...familyConnections,
+        ...connections
+          .filter((connection) => {
+            const otherUser = connection.userAId === userId ? connection.userB : connection.userA;
+            return !isDirectFamilyConnection(user, otherUser);
+          })
+          .map((connection) => {
+            const otherUser = connection.userAId === userId ? connection.userB : connection.userA;
+
+            return {
+              id: connection.id,
+              createdAt: connection.createdAt,
+              user: {
+                ...mapRelationshipUser(otherUser),
+                isFamilyConnection: false,
+              },
+            };
+          }),
+      ],
       pendingApprovals: pendingApprovals.map((connection) => {
         const otherUser = connection.userAId === userId ? connection.userB : connection.userA;
 
@@ -263,5 +295,20 @@ export const connectionService = {
     }
 
     await connectionRepository.updateRequestStatus(request.id, 'CANCELED');
+  },
+
+  removeConnection: async (userId: string, otherUserId: string) => {
+    const [user, otherUser] = await Promise.all([ensureActiveUser(userId), ensureActiveUser(otherUserId)]);
+
+    if (isDirectFamilyConnection(user, otherUser)) {
+      throw new AppError('FORBIDDEN', 'Family-linked accounts cannot be disconnected', 403);
+    }
+
+    const [userAId, userBId] = normalizeConnectionPair(userId, otherUserId);
+    const result = await connectionRepository.removeActiveConnection(userAId, userBId);
+
+    if (result.count === 0) {
+      throw new AppError('CONNECTION_NOT_FOUND', 'Active connection not found', 404);
+    }
   },
 };

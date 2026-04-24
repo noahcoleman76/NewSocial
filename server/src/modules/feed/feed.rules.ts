@@ -1,7 +1,6 @@
-import * as domainConstants from '../../../../shared/constants/domain';
 import type { FeedAdItem, FeedItem, FeedPostItem } from '../../../../shared/types/domain';
 
-const { FEED_WINDOW_DAYS } = domainConstants;
+const FEED_WINDOW_DAYS = 14;
 
 type FeedPostCandidate = Omit<FeedPostItem, 'type'> & {
   authorId: string;
@@ -28,6 +27,7 @@ export const filterFeedPosts = (
       commentCount: post.commentCount,
       likeCount: post.likeCount,
       likedByMe: post.likedByMe,
+      canDelete: post.canDelete,
     }));
 };
 

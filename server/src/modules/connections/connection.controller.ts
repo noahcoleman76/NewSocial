@@ -8,6 +8,12 @@ const getRequestId = (req: Request) => {
   return Array.isArray(requestId) ? requestId[0] : requestId;
 };
 
+const getUserId = (req: Request) => {
+  const { userId } = req.params;
+
+  return Array.isArray(userId) ? userId[0] : userId;
+};
+
 export const connectionController = {
   listConnections: async (req: Request, res: Response) => {
     if (!req.auth?.sub) {
@@ -42,6 +48,15 @@ export const connectionController = {
     }
 
     await connectionService.cancelRequest(req.auth.sub, getRequestId(req));
+    res.status(204).send();
+  },
+
+  removeConnection: async (req: Request, res: Response) => {
+    if (!req.auth?.sub) {
+      throw new AppError('UNAUTHORIZED', 'Authentication required', 401);
+    }
+
+    await connectionService.removeConnection(req.auth.sub, getUserId(req));
     res.status(204).send();
   },
 };

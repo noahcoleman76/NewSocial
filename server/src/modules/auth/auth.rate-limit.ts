@@ -1,7 +1,7 @@
 import rateLimit from 'express-rate-limit';
-import * as domainConstants from '../../../../shared/constants/domain';
 
-const { AUTH_RATE_LIMIT_MAX, AUTH_RATE_LIMIT_WINDOW_MS } = domainConstants;
+const AUTH_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
+const AUTH_RATE_LIMIT_MAX = 25;
 
 export const authRateLimit = rateLimit({
   windowMs: AUTH_RATE_LIMIT_WINDOW_MS,

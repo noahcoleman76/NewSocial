@@ -31,6 +31,7 @@ export type FeedPostItem = {
   commentCount: number;
   likeCount: number;
   likedByMe: boolean;
+  canDelete?: boolean;
 };
 
 export type FeedAdItem = {

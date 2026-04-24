@@ -33,6 +33,7 @@ export type SearchUser = {
   displayName: string;
   profileImageUrl: string | null;
   isFamilyLinked: boolean;
+  isFamilyConnection?: boolean;
   relationship: ConnectionRelationship;
   requestId: string | null;
 };
@@ -46,6 +47,7 @@ export type ConnectionListItem = {
     displayName: string;
     profileImageUrl: string | null;
     isFamilyLinked: boolean;
+    isFamilyConnection?: boolean;
   };
 };
 

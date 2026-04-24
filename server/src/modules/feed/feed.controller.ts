@@ -1,9 +1,14 @@
 import type { Request, Response } from 'express';
-import { feedRepository } from './feed.repository';
+import { AppError } from '@/lib/errors';
+import { feedService } from './feed.service';
 
 export const feedController = {
-  getFeed: async (_req: Request, res: Response) => {
-    const items = await feedRepository.getFeed();
+  getFeed: async (req: Request, res: Response) => {
+    if (!req.auth?.sub) {
+      throw new AppError('UNAUTHORIZED', 'Authentication required', 401);
+    }
+
+    const items = await feedService.getFeed(req.auth.sub);
     res.json({ items, endMessage: "You're caught up" });
   },
 };

@@ -6,3 +6,4 @@ import { usersController } from './users.controller';
 export const usersRouter = Router();
 
 usersRouter.get('/search', authRequired, asyncHandler(usersController.search));
+usersRouter.get('/:username', authRequired, asyncHandler(usersController.getProfile));

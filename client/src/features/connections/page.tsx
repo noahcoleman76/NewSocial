@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { PageCard } from '@/components/page-card';
@@ -13,6 +14,7 @@ type ConnectionsResponse = {
 const cardClass = 'rounded-[1.5rem] border border-slate-200 p-4';
 
 export const ConnectionsPage = () => {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const connectionsQuery = useQuery({
@@ -47,7 +49,19 @@ export const ConnectionsPage = () => {
     },
   });
 
-  const busy = acceptRequestMutation.isPending || cancelRequestMutation.isPending;
+  const removeConnectionMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      await api.delete(`/connections/${userId}`);
+    },
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['connections'] }),
+        queryClient.invalidateQueries({ queryKey: ['user-search'] }),
+      ]);
+    },
+  });
+
+  const busy = acceptRequestMutation.isPending || cancelRequestMutation.isPending || removeConnectionMutation.isPending;
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
@@ -57,12 +71,43 @@ export const ConnectionsPage = () => {
         {connectionsQuery.data?.connections.length ? (
           <div className="space-y-3">
             {connectionsQuery.data.connections.map((connection) => (
-              <div key={connection.id} className={cardClass}>
+              <div
+                key={connection.id}
+                className={`${cardClass} cursor-pointer transition hover:bg-slate-50`}
+                onClick={() => navigate(`/profile/${connection.user.username}`)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    navigate(`/profile/${connection.user.username}`);
+                  }
+                }}
+              >
                 <p className="font-medium">{connection.user.displayName}</p>
                 <p className="text-sm text-slate-500">@{connection.user.username}</p>
                 {connection.user.isFamilyLinked ? (
                   <p className="mt-2 text-xs uppercase tracking-[0.16em] text-amber-700">Family-linked account</p>
                 ) : null}
+                {connection.user.isFamilyConnection ? (
+                  <p className="mt-4 text-sm text-slate-500">Family-linked accounts stay connected automatically.</p>
+                ) : (
+                  <div className="mt-4">
+                    <button
+                      className="rounded-full border border-rose-200 px-4 py-2 text-sm font-medium text-rose-700 disabled:opacity-60"
+                      disabled={busy}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        if (window.confirm(`Are you sure you want to disconnect from ${connection.user.displayName}?`)) {
+                          removeConnectionMutation.mutate(connection.user.id);
+                        }
+                      }}
+                      type="button"
+                    >
+                      {removeConnectionMutation.isPending ? 'Disconnecting...' : 'Disconnect'}
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>

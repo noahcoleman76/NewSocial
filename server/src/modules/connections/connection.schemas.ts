@@ -7,3 +7,7 @@ export const createConnectionRequestSchema = z.object({
 export const connectionRequestParamsSchema = z.object({
   requestId: z.string().min(1),
 });
+
+export const connectionUserParamsSchema = z.object({
+  userId: z.string().min(1),
+});
