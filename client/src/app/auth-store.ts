@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { AxiosError } from 'axios';
 import { api, clearAccessToken, setAccessToken } from '@/lib/api';
+import { disconnectMessageSocket } from '@/features/messages/socket';
 import type { CurrentUser } from '@/types/app';
 
 type AuthStatus = 'idle' | 'loading' | 'authenticated' | 'unauthenticated';
@@ -22,6 +23,8 @@ type AuthState = {
   childToken: string | null;
   status: AuthStatus;
   errorMessage: string | null;
+  applySession: (payload: AuthResponse) => void;
+  setCurrentUser: (user: CurrentUser) => void;
   initialize: () => Promise<void>;
   login: (input: { email: string; password: string }) => Promise<void>;
   register: (input: {
@@ -70,6 +73,7 @@ const applyAuth = (payload: AuthResponse, set: (partial: Partial<AuthState>) => 
 
 const clearAuth = (set: (partial: Partial<AuthState>) => void) => {
   clearAccessToken();
+  disconnectMessageSocket();
   clearStoredChildToken();
   set({
     accessToken: null,
@@ -86,6 +90,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   childToken: readStoredChildToken(),
   status: 'idle',
   errorMessage: null,
+  applySession: (payload) => applyAuth(payload, set),
+  setCurrentUser: (user) => set({ currentUser: user, errorMessage: null }),
 
   initialize: async () => {
     const status = get().status;

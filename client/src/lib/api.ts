@@ -11,6 +11,8 @@ export const setAccessToken = (nextAccessToken: string | null) => {
   accessToken = nextAccessToken;
 };
 
+export const getAccessToken = () => accessToken;
+
 export const clearAccessToken = () => {
   accessToken = null;
 };

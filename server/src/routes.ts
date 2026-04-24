@@ -5,6 +5,7 @@ import { authRouter } from '@/modules/auth/auth.routes';
 import { connectionRouter } from '@/modules/connections/connection.routes';
 import { familyRouter } from '@/modules/family/family.routes';
 import { feedRouter } from '@/modules/feed/feed.routes';
+import { messagesRouter } from '@/modules/messages/messages.routes';
 import { notificationsRouter } from '@/modules/notifications/notifications.routes';
 import { postsRouter } from '@/modules/posts/posts.routes';
 import { reportsRouter } from '@/modules/reports/reports.routes';
@@ -21,6 +22,7 @@ export const registerRoutes = (app: Express) => {
   api.use('/connections', connectionRouter);
   api.use('/users', usersRouter);
   api.use('/feed', feedRouter);
+  api.use('/conversations', messagesRouter);
   api.use('/posts', postsRouter);
   api.use('/reports', reportsRouter);
   api.use('/notifications', notificationsRouter);

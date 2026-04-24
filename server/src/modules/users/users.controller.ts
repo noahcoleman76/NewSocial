@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
 import { AppError } from '@/lib/errors';
+import { setRefreshCookie } from '@/modules/auth/auth.cookies';
 import { usersService } from './users.service';
 
 export const usersController = {
@@ -20,5 +21,37 @@ export const usersController = {
     const username = Array.isArray(req.params.username) ? req.params.username[0] : req.params.username;
     const profile = await usersService.getProfile(req.auth.sub, username);
     res.json(profile);
+  },
+  updateMe: async (req: Request, res: Response) => {
+    if (!req.auth?.sub) {
+      throw new AppError('UNAUTHORIZED', 'Authentication required', 401);
+    }
+
+    const user = await usersService.updateMe(req.auth.sub, req.body);
+    res.json({ user });
+  },
+  updateProfileImage: async (req: Request, res: Response) => {
+    if (!req.auth?.sub) {
+      throw new AppError('UNAUTHORIZED', 'Authentication required', 401);
+    }
+
+    const file = Array.isArray(req.file) ? req.file[0] : req.file;
+    const user = await usersService.updateProfileImage(req.auth.sub, file);
+    res.json({ user });
+  },
+  changePassword: async (req: Request, res: Response) => {
+    if (!req.auth?.sub) {
+      throw new AppError('UNAUTHORIZED', 'Authentication required', 401);
+    }
+
+    const result = await usersService.changePassword(req.auth.sub, {
+      currentPassword: req.body.currentPassword,
+      newPassword: req.body.newPassword,
+    });
+    setRefreshCookie(res, result.refreshToken);
+    res.json({
+      accessToken: result.accessToken,
+      user: result.user,
+    });
   },
 };

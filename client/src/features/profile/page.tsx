@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { PageCard } from '@/components/page-card';
@@ -39,6 +39,7 @@ const tabClass = (active: boolean) =>
   `rounded-full px-4 py-2 text-sm transition ${active ? 'bg-slate-900 text-white' : 'border border-slate-200 text-slate-600 hover:bg-slate-50'}`;
 
 export const ProfilePage = () => {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { username = '' } = useParams();
   const [activeTab, setActiveTab] = useState<'feed' | 'pictures' | 'posts'>('feed');
@@ -109,6 +110,17 @@ export const ProfilePage = () => {
     },
   });
 
+  const messageMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      const { data } = await api.get<{ conversation: { id: string } }>(`/conversations/with/${userId}`);
+      return data.conversation;
+    },
+    onSuccess: async (conversation) => {
+      await queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      navigate(`/messages/${conversation.id}`);
+    },
+  });
+
   const profile = profileQuery.data?.profile;
   const tabs = profileQuery.data?.tabs;
   const visiblePosts = tabs?.[activeTab] ?? [];
@@ -152,23 +164,43 @@ export const ProfilePage = () => {
                   </button>
                 ) : null}
                 {profile.relationship === 'CONNECTED' && !profile.isFamilyConnection ? (
-                  <button
-                    className="rounded-full border border-rose-200 px-4 py-2 text-sm font-medium text-rose-700 disabled:opacity-60"
-                    disabled={disconnectMutation.isPending}
-                    onClick={() => {
-                      if (window.confirm(`Are you sure you want to disconnect from ${profile.displayName}?`)) {
-                        disconnectMutation.mutate(profile.id);
-                      }
-                    }}
-                    type="button"
-                  >
-                    {disconnectMutation.isPending ? 'Disconnecting...' : 'Disconnect'}
-                  </button>
+                  <>
+                    <button
+                      className="rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 disabled:opacity-60"
+                      disabled={messageMutation.isPending}
+                      onClick={() => messageMutation.mutate(profile.id)}
+                      type="button"
+                    >
+                      {messageMutation.isPending ? 'Opening...' : 'Message'}
+                    </button>
+                    <button
+                      className="rounded-full border border-rose-200 px-4 py-2 text-sm font-medium text-rose-700 disabled:opacity-60"
+                      disabled={disconnectMutation.isPending}
+                      onClick={() => {
+                        if (window.confirm(`Are you sure you want to disconnect from ${profile.displayName}?`)) {
+                          disconnectMutation.mutate(profile.id);
+                        }
+                      }}
+                      type="button"
+                    >
+                      {disconnectMutation.isPending ? 'Disconnecting...' : 'Disconnect'}
+                    </button>
+                  </>
                 ) : null}
                 {profile.relationship === 'CONNECTED' && profile.isFamilyConnection ? (
-                  <span className="rounded-full bg-slate-100 px-3 py-2 text-xs uppercase tracking-[0.16em] text-slate-600">
-                    Family connection
-                  </span>
+                  <>
+                    <button
+                      className="rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 disabled:opacity-60"
+                      disabled={messageMutation.isPending}
+                      onClick={() => messageMutation.mutate(profile.id)}
+                      type="button"
+                    >
+                      {messageMutation.isPending ? 'Opening...' : 'Message'}
+                    </button>
+                    <span className="rounded-full bg-slate-100 px-3 py-2 text-xs uppercase tracking-[0.16em] text-slate-600">
+                      Family connection
+                    </span>
+                  </>
                 ) : null}
                 {profile.relationship === 'INCOMING_REQUEST' ? (
                   <span className="rounded-full bg-slate-100 px-3 py-2 text-xs uppercase tracking-[0.16em] text-slate-600">

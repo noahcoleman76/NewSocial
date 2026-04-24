@@ -93,8 +93,6 @@ type FamilyChildConnectionsResponse = {
   };
   connections: FamilyConnectionItem[];
   pendingApprovals: FamilyConnectionRequestItem[];
-  incomingRequests: FamilyConnectionRequestItem[];
-  outgoingRequests: FamilyConnectionRequestItem[];
 };
 
 export const FamilyPage = () => {
@@ -449,7 +447,7 @@ export const FamilyChildConnectionsPage = () => {
     <div className="space-y-6">
       <PageCard
         title="Child connections"
-        subtitle="Review accepted connections and pending requests for this linked child account."
+        subtitle="Review accepted connections and approve any child connection that still needs your approval."
       >
         {connectionsQuery.isLoading ? <p className="text-sm text-slate-500">Loading child connections...</p> : null}
         {connectionsQuery.isError ? (
@@ -527,42 +525,6 @@ export const FamilyChildConnectionsPage = () => {
                 <div className="rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 p-5 text-sm leading-7 text-slate-600">
                   This child account does not have any active connections yet.
                 </div>
-              )}
-            </section>
-            <section className="space-y-3">
-              <h3 className="text-sm font-medium uppercase tracking-[0.18em] text-slate-500">Incoming requests</h3>
-              {connectionsQuery.data.incomingRequests.length ? (
-                <div className="grid gap-3 md:grid-cols-2">
-                  {connectionsQuery.data.incomingRequests.map((request) => (
-                    <div key={request.id} className="rounded-[1.5rem] border border-slate-200 p-4">
-                      <p className="font-medium text-slate-900">{request.user.displayName}</p>
-                      <p className="mt-1 text-sm text-slate-500">@{request.user.username}</p>
-                      <p className="mt-2 text-xs uppercase tracking-[0.16em] text-slate-400">
-                        Requested {new Date(request.createdAt).toLocaleDateString()}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-slate-500">No incoming requests right now.</p>
-              )}
-            </section>
-            <section className="space-y-3">
-              <h3 className="text-sm font-medium uppercase tracking-[0.18em] text-slate-500">Outgoing requests</h3>
-              {connectionsQuery.data.outgoingRequests.length ? (
-                <div className="grid gap-3 md:grid-cols-2">
-                  {connectionsQuery.data.outgoingRequests.map((request) => (
-                    <div key={request.id} className="rounded-[1.5rem] border border-slate-200 p-4">
-                      <p className="font-medium text-slate-900">{request.user.displayName}</p>
-                      <p className="mt-1 text-sm text-slate-500">@{request.user.username}</p>
-                      <p className="mt-2 text-xs uppercase tracking-[0.16em] text-slate-400">
-                        Sent {new Date(request.createdAt).toLocaleDateString()}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-slate-500">No outgoing requests right now.</p>
               )}
             </section>
           </div>

@@ -4,7 +4,7 @@ import { ProtectedRoute } from '@/components/protected-route';
 import { AuthPage } from '@/features/auth/pages';
 import { FeedPage } from '@/features/feed/page';
 import { SearchPage } from '@/features/connections/search-page';
-import { MessagesPage, ConversationPage } from '@/features/messages/pages';
+import { MessagesPage, ConversationPage, NewMessagePage } from '@/features/messages/pages';
 import { NotificationsPage } from '@/features/notifications/page';
 import { ProfilePage } from '@/features/profile/page';
 import { SettingsPage } from '@/features/profile/settings-page';
@@ -29,6 +29,7 @@ export const router = createBrowserRouter([
           { path: '/feed', element: <FeedPage /> },
           { path: '/search', element: <SearchPage /> },
           { path: '/messages', element: <MessagesPage /> },
+          { path: '/messages/new', element: <NewMessagePage /> },
           { path: '/messages/:conversationId', element: <ConversationPage /> },
           { path: '/notifications', element: <NotificationsPage /> },
           { path: '/profile/:username', element: <ProfilePage /> },
