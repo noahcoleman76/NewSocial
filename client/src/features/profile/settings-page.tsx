@@ -43,6 +43,7 @@ export const SettingsPage = () => {
   });
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [showPasswordFields, setShowPasswordFields] = useState(false);
+  const [showPasswordValues, setShowPasswordValues] = useState(false);
   const [passwordFields, setPasswordFields] = useState({
     currentPassword: '',
     newPassword: '',
@@ -171,6 +172,7 @@ export const SettingsPage = () => {
       });
       setPasswordMessage('Password changed.');
       setShowPasswordFields(false);
+      setShowPasswordValues(false);
       await queryClient.invalidateQueries({ queryKey: ['profile'] });
     },
     onError: (error) => {
@@ -311,7 +313,7 @@ export const SettingsPage = () => {
                   setPasswordFields((current) => ({ ...current, currentPassword: event.target.value }))
                 }
                 placeholder="Current password"
-                type="password"
+                type={showPasswordValues ? 'text' : 'password'}
                 value={passwordFields.currentPassword}
               />
               <input
@@ -320,7 +322,7 @@ export const SettingsPage = () => {
                   setPasswordFields((current) => ({ ...current, newPassword: event.target.value }))
                 }
                 placeholder="New password"
-                type="password"
+                type={showPasswordValues ? 'text' : 'password'}
                 value={passwordFields.newPassword}
               />
               <input
@@ -329,10 +331,17 @@ export const SettingsPage = () => {
                   setPasswordFields((current) => ({ ...current, confirmPassword: event.target.value }))
                 }
                 placeholder="Confirm new password"
-                type="password"
+                type={showPasswordValues ? 'text' : 'password'}
                 value={passwordFields.confirmPassword}
               />
-              <div className="md:col-span-2">
+              <div className="flex flex-wrap gap-3 md:col-span-2">
+                <button
+                  className="rounded-full border border-slate-200 px-5 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                  onClick={() => setShowPasswordValues((current) => !current)}
+                  type="button"
+                >
+                  {showPasswordValues ? 'Hide passwords' : 'Show passwords'}
+                </button>
                 <button
                   className="rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white disabled:opacity-60"
                   disabled={
@@ -398,5 +407,6 @@ export const SettingsPage = () => {
     </div>
   );
 };
+
 
 

@@ -16,7 +16,7 @@ export const notificationsService = {
           ? 'Someone commented on your post.'
           : 'A connection request was accepted.',
       href:
-        notification.type === 'POST_COMMENT'
+        notification.type === 'POST_COMMENT' && notification.entityType === 'POST'
           ? `/post/${notification.entityId}`
           : `/profile/${notification.entityId}`,
       read: Boolean(notification.readAt),
@@ -35,5 +35,6 @@ export const notificationsService = {
     await notificationsRepository.clearAll(userId);
   },
 };
+
 
 

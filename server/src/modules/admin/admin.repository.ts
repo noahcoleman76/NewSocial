@@ -153,6 +153,19 @@ export const adminRepository = {
       },
     }),
 
+  dismissReport: (reportId: string, adminUserId: string) =>
+    prisma.report.updateMany({
+      where: {
+        id: reportId,
+        status: 'OPEN',
+      },
+      data: {
+        status: 'RESOLVED',
+        reviewedByAdminId: adminUserId,
+        reviewedAt: new Date(),
+      },
+    }),
+
   createAuditLog: (data: {
     adminUserId: string;
     actionType: string;
@@ -164,6 +177,7 @@ export const adminRepository = {
       data,
     }),
 };
+
 
 
 

@@ -64,6 +64,16 @@ export const adminController = {
     res.json({ reports });
   },
 
+  dismissReport: async (req: Request, res: Response) => {
+    if (!req.auth?.sub) {
+      throw new AppError('UNAUTHORIZED', 'Authentication required', 401);
+    }
+
+    const reportId = Array.isArray(req.params.reportId) ? req.params.reportId[0] : req.params.reportId;
+    await adminService.dismissReport(req.auth.sub, reportId);
+    res.status(204).send();
+  },
+
   deletePost: async (req: Request, res: Response) => {
     if (!req.auth?.sub) {
       throw new AppError('UNAUTHORIZED', 'Authentication required', 401);
@@ -74,6 +84,7 @@ export const adminController = {
     res.status(204).send();
   },
 };
+
 
 
 

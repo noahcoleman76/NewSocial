@@ -142,6 +142,20 @@ export const adminService = {
   },
 
   listOpenReports: reportsService.listOpenReports,
+  dismissReport: async (adminUserId: string, reportId: string) => {
+    const result = await adminRepository.dismissReport(reportId, adminUserId);
+    if (result.count === 0) {
+      throw new AppError('REPORT_NOT_FOUND', 'Open report not found', 404);
+    }
+
+    await adminRepository.createAuditLog({
+      adminUserId,
+      actionType: 'DISMISS_REPORT',
+      targetType: 'REPORT',
+      targetId: reportId,
+      metadata: {},
+    });
+  },
   deleteReportedPost: async (adminUserId: string, postId: string) => {
     const post = await postsRepository.findPostById(postId, adminUserId);
     if (!post) {
@@ -161,6 +175,7 @@ export const adminService = {
     });
   },
 };
+
 
 
 

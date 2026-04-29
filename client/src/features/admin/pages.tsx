@@ -60,6 +60,14 @@ export const AdminHomePage = () => {
     },
   });
 
+  const dismissReportMutation = useMutation({
+    mutationFn: async (reportId: string) => {
+      await api.post(`/admin/reports/${reportId}/dismiss`);
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['admin-reports'] });
+    },
+  });
   const deletePostMutation = useMutation({
     mutationFn: async (postId: string) => {
       await api.delete(`/admin/posts/${postId}`);
@@ -105,6 +113,18 @@ export const AdminHomePage = () => {
                     on {new Date(report.createdAt).toLocaleString()}
                   </p>
                 </div>
+                <button
+                  className="rounded-full border border-slate-200 px-4 py-2 text-sm text-slate-700 disabled:opacity-60"
+                  disabled={dismissReportMutation.isPending}
+                  onClick={() => {
+                    if (window.confirm('Dismiss this report?')) {
+                      dismissReportMutation.mutate(report.id);
+                    }
+                  }}
+                  type="button"
+                >
+                  {dismissReportMutation.isPending ? 'Dismissing...' : 'Dismiss report'}
+                </button>
               </div>
 
               {report.targetType === 'ACCOUNT' && report.targetAccount ? (
@@ -157,4 +177,5 @@ export const AdminHomePage = () => {
 export const AdminReportsPage = AdminHomePage;
 export const AdminUsersPage = AdminHomePage;
 export const AdminAuditPage = AdminHomePage;
+
 

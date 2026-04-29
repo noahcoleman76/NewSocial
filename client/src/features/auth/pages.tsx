@@ -179,22 +179,13 @@ const RegisterForm = () => {
         <input className={inputClass} placeholder="Display name" {...form.register('displayName')} />
         {fieldError(form.formState.errors.displayName?.message)}
       </div>
-      <div className="space-y-2">
-        <div className="flex items-center gap-3">
-          <input
-            className={`${inputClass} flex-1`}
-            placeholder="Password"
-            type={showPassword ? 'text' : 'password'}
-            {...form.register('password')}
-          />
-          <button
-            className="rounded-full border border-slate-200 px-4 py-3 text-sm text-slate-600 transition hover:bg-slate-50"
-            onClick={() => setShowPassword((current) => !current)}
-            type="button"
-          >
-            {showPassword ? 'Hide' : 'Show'}
-          </button>
-        </div>
+      <div>
+        <input
+          className={inputClass}
+          placeholder="Password"
+          type={showPassword ? 'text' : 'password'}
+          {...form.register('password')}
+        />
         {fieldError(form.formState.errors.password?.message)}
       </div>
       <div>
@@ -206,6 +197,13 @@ const RegisterForm = () => {
         />
         {fieldError(form.formState.errors.confirmPassword?.message)}
       </div>
+      <button
+        className="rounded-full border border-slate-200 px-4 py-3 text-sm text-slate-600 transition hover:bg-slate-50"
+        onClick={() => setShowPassword((current) => !current)}
+        type="button"
+      >
+        {showPassword ? 'Hide passwords' : 'Show passwords'}
+      </button>
       <div>
         <input className={inputClass} placeholder="Family code (optional)" {...form.register('familyCode')} />
         {fieldError(form.formState.errors.familyCode?.message)}
@@ -366,3 +364,4 @@ export const ChildSetPasswordPage = () => {
     </AuthLayout>
   );
 };
+
