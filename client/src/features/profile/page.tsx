@@ -23,6 +23,12 @@ type ProfileResponse = {
     displayName: string;
     bio: string | null;
     profileImageUrl: string | null;
+    role: 'STANDARD' | 'CHILD' | 'ADMIN';
+    accountStatus: 'ACTIVE' | 'DISABLED' | 'DELETED';
+    canPromoteToAdmin: boolean;
+    canDisableAccount: boolean;
+    canEnableAccount: boolean;
+    canSeePosts: boolean;
     isFamilyLinked: boolean;
     isFamilyConnection?: boolean;
     isSelf: boolean;
@@ -43,6 +49,9 @@ export const ProfilePage = () => {
   const queryClient = useQueryClient();
   const { username = '' } = useParams();
   const [activeTab, setActiveTab] = useState<'feed' | 'pictures' | 'posts'>('feed');
+  const [reportStatus, setReportStatus] = useState<string | null>(null);
+  const [adminActionStatus, setAdminActionStatus] = useState<string | null>(null);
+  const [postReportStatus, setPostReportStatus] = useState<string | null>(null);
 
   const profileQuery = useQuery({
     queryKey: ['profile', username],
@@ -98,6 +107,37 @@ export const ProfilePage = () => {
     },
   });
 
+  const reportPostMutation = useMutation({
+    mutationFn: async ({ postId, reason, message }: { postId: string; reason: string; message?: string }) => {
+      await api.post('/reports', {
+        targetType: 'POST',
+        targetId: postId,
+        reason,
+        message,
+      });
+    },
+    onSuccess: () => {
+      setPostReportStatus('Post reported for admin review.');
+    },
+    onError: () => {
+      setPostReportStatus('Could not report this post right now.');
+    },
+  });
+
+  const handleReportPost = (postId: string) => {
+    const reason = window.prompt('Reason for reporting this post');
+    if (!reason?.trim()) {
+      return;
+    }
+
+    const detail = window.prompt('Optional note for the admin');
+    setPostReportStatus(null);
+    reportPostMutation.mutate({
+      postId,
+      reason: reason.trim(),
+      message: detail?.trim() || undefined,
+    });
+  };
   const deletePostMutation = useMutation({
     mutationFn: async (postId: string) => {
       await api.delete(`/posts/${postId}`);
@@ -121,6 +161,74 @@ export const ProfilePage = () => {
     },
   });
 
+
+  const reportAccountMutation = useMutation({
+    mutationFn: async (input: { accountId: string; reason: string; message?: string }) => {
+      await api.post('/reports', {
+        targetType: 'ACCOUNT',
+        targetId: input.accountId,
+        reason: input.reason,
+        message: input.message,
+      });
+    },
+    onSuccess: () => {
+      setReportStatus('Account reported.');
+    },
+    onError: () => {
+      setReportStatus('Could not report this account right now.');
+    },
+  });
+
+  const moderateAccountMutation = useMutation({
+    mutationFn: async ({ userId, action }: { userId: string; action: 'disable' | 'enable' }) => {
+      await api.post(`/admin/users/${userId}/${action}`);
+      return action;
+    },
+    onSuccess: async (action) => {
+      setAdminActionStatus(action === 'disable' ? 'Account disabled.' : 'Account enabled.');
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['profile', username] }),
+        queryClient.invalidateQueries({ queryKey: ['admin-summary'] }),
+        queryClient.invalidateQueries({ queryKey: ['admin-users'] }),
+        queryClient.invalidateQueries({ queryKey: ['admin-reports'] }),
+        queryClient.invalidateQueries({ queryKey: ['user-search'] }),
+        queryClient.invalidateQueries({ queryKey: ['feed'] }),
+      ]);
+    },
+    onError: () => {
+      setAdminActionStatus('Could not update this account right now.');
+    },
+  });
+  const promoteAdminMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      await api.post(`/admin/users/${userId}/promote-admin`);
+    },
+    onSuccess: async () => {
+      setAdminActionStatus('Account promoted to admin.');
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['profile', username] }),
+        queryClient.invalidateQueries({ queryKey: ['admin-summary'] }),
+        queryClient.invalidateQueries({ queryKey: ['admin-users'] }),
+      ]);
+    },
+    onError: () => {
+      setAdminActionStatus('Could not promote this account right now.');
+    },
+  });
+  const handleReportAccount = (accountId: string) => {
+    const reason = window.prompt('Reason for reporting this account');
+    if (!reason?.trim()) {
+      return;
+    }
+
+    const detail = window.prompt('Optional note for the admin');
+    setReportStatus(null);
+    reportAccountMutation.mutate({
+      accountId,
+      reason: reason.trim(),
+      message: detail?.trim() || undefined,
+    });
+  };
   const profile = profileQuery.data?.profile;
   const tabs = profileQuery.data?.tabs;
   const visiblePosts = tabs?.[activeTab] ?? [];
@@ -145,15 +253,21 @@ export const ProfilePage = () => {
                   <h2 className="text-2xl font-semibold text-slate-900">{profile.displayName}</h2>
                   <p className="text-sm text-slate-500">@{profile.username}</p>
                 </div>
-                {profile.isFamilyLinked ? (
-                  <p className="text-xs uppercase tracking-[0.16em] text-amber-700">Family-linked account</p>
-                ) : null}
+                <div className="flex flex-wrap gap-2">
+                  {profile.isFamilyLinked ? (
+                    <p className="text-xs uppercase tracking-[0.16em] text-amber-700">Family-linked account</p>
+                  ) : null}
+                  {profile.accountStatus === 'DISABLED' ? (
+                    <p className="text-xs uppercase tracking-[0.16em] text-rose-700">Disabled account</p>
+                  ) : null}
+                </div>
                 <p className="max-w-2xl text-sm leading-7 text-slate-600">{profile.bio || 'No bio yet.'}</p>
               </div>
             </div>
             {!profile.isSelf ? (
-              <div className="flex flex-wrap gap-3">
-                {profile.relationship === 'NONE' ? (
+              <>
+                <div className="flex flex-wrap gap-3">
+                {profile.relationship === 'NONE' && profile.accountStatus === 'ACTIVE' ? (
                   <button
                     className="rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 disabled:opacity-60"
                     disabled={sendRequestMutation.isPending}
@@ -163,7 +277,7 @@ export const ProfilePage = () => {
                     {sendRequestMutation.isPending ? 'Connecting...' : 'Connect'}
                   </button>
                 ) : null}
-                {profile.relationship === 'CONNECTED' && !profile.isFamilyConnection ? (
+                {profile.relationship === 'CONNECTED' && !profile.isFamilyConnection && profile.accountStatus === 'ACTIVE' ? (
                   <>
                     <button
                       className="rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 disabled:opacity-60"
@@ -187,7 +301,7 @@ export const ProfilePage = () => {
                     </button>
                   </>
                 ) : null}
-                {profile.relationship === 'CONNECTED' && profile.isFamilyConnection ? (
+                {profile.relationship === 'CONNECTED' && profile.isFamilyConnection && profile.accountStatus === 'ACTIVE' ? (
                   <>
                     <button
                       className="rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 disabled:opacity-60"
@@ -217,13 +331,82 @@ export const ProfilePage = () => {
                     Waiting for family approval
                   </span>
                 ) : null}
+                {profile.canPromoteToAdmin ? (
+                  <button
+                    className="rounded-full border border-slate-900 bg-slate-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
+                    disabled={promoteAdminMutation.isPending}
+                    onClick={() => {
+                      if (window.confirm(`Make ${profile.displayName} an admin?`)) {
+                        setAdminActionStatus(null);
+                        promoteAdminMutation.mutate(profile.id);
+                      }
+                    }}
+                    type="button"
+                  >
+                    {promoteAdminMutation.isPending ? 'Promoting...' : 'Make admin'}
+                  </button>
+                ) : null}
+                {profile.canDisableAccount ? (
+                  <button
+                    className="rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-medium text-rose-700 disabled:opacity-60"
+                    disabled={moderateAccountMutation.isPending}
+                    onClick={() => {
+                      if (window.confirm(`Disable ${profile.displayName}'s account? They will not be able to log in until an admin re-enables it.`)) {
+                        setAdminActionStatus(null);
+                        moderateAccountMutation.mutate({ userId: profile.id, action: 'disable' });
+                      }
+                    }}
+                    type="button"
+                  >
+                    {moderateAccountMutation.isPending ? 'Updating...' : 'Disable account'}
+                  </button>
+                ) : null}
+                {profile.canEnableAccount ? (
+                  <button
+                    className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700 disabled:opacity-60"
+                    disabled={moderateAccountMutation.isPending}
+                    onClick={() => {
+                      if (window.confirm(`Re-enable ${profile.displayName}'s account?`)) {
+                        setAdminActionStatus(null);
+                        moderateAccountMutation.mutate({ userId: profile.id, action: 'enable' });
+                      }
+                    }}
+                    type="button"
+                  >
+                    {moderateAccountMutation.isPending ? 'Updating...' : 'Enable account'}
+                  </button>
+                ) : null}
+                <button
+                  className="rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 disabled:opacity-60"
+                  disabled={reportAccountMutation.isPending}
+                  onClick={() => handleReportAccount(profile.id)}
+                  type="button"
+                >
+                  {reportAccountMutation.isPending ? 'Reporting...' : 'Report account'}
+                </button>
               </div>
+              {adminActionStatus ? (
+                <p className={`text-sm ${['Account promoted to admin.', 'Account disabled.', 'Account enabled.'].includes(adminActionStatus) ? 'text-emerald-700' : 'text-rose-600'}`}>
+                  {adminActionStatus}
+                </p>
+              ) : null}
+              {reportStatus ? (
+                <p className={`text-sm ${reportStatus === 'Account reported.' ? 'text-emerald-700' : 'text-rose-600'}`}>
+                  {reportStatus}
+                </p>
+              ) : null}
+              </>
             ) : null}
           </div>
         ) : null}
       </PageCard>
-      {profile && (profile.isSelf || profile.relationship === 'CONNECTED') ? (
+      {profile && profile.canSeePosts ? (
         <PageCard title="Posts" subtitle="Profiles keep older posts visible even after they leave the main feed.">
+          {postReportStatus ? (
+            <p className={`mb-4 text-sm ${postReportStatus === 'Post reported for admin review.' ? 'text-emerald-700' : 'text-rose-600'}`}>
+              {postReportStatus}
+            </p>
+          ) : null}
           <div className="mb-4 flex flex-wrap gap-2">
             <button className={tabClass(activeTab === 'feed')} onClick={() => setActiveTab('feed')} type="button">
               Feed
@@ -275,7 +458,16 @@ export const ProfilePage = () => {
                       >
                         {deletePostMutation.isPending ? 'Deleting...' : 'Delete'}
                       </button>
-                    ) : null}
+                    ) : (
+                      <button
+                        className="rounded-full border border-slate-200 px-4 py-2 text-sm text-slate-600 disabled:opacity-60"
+                        disabled={reportPostMutation.isPending}
+                        onClick={() => handleReportPost(post.id)}
+                        type="button"
+                      >
+                        {reportPostMutation.isPending ? 'Reporting...' : 'Report post'}
+                      </button>
+                    )}
                   </div>
                 </article>
               ))}
@@ -288,3 +480,13 @@ export const ProfilePage = () => {
     </div>
   );
 };
+
+
+
+
+
+
+
+
+
+

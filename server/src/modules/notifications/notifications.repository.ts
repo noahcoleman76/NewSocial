@@ -42,4 +42,13 @@ export const notificationsRepository = {
         readAt: new Date(),
       },
     }),
+
+  clearAll: (userId: string) =>
+    prisma.notification.deleteMany({
+      where: {
+        userId,
+      },
+    }),
 };
+
+

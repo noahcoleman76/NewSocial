@@ -64,7 +64,7 @@ export const connectionService = {
     }
 
     const requester = await ensureActiveUser(requesterId);
-    const users = await connectionRepository.searchUsers(requesterId, trimmed);
+    const users = await connectionRepository.searchUsers(requesterId, trimmed, requester.role === 'ADMIN');
 
     return users.map((user) => {
       const familyConnection = isDirectFamilyConnection(requester, user);
@@ -312,3 +312,4 @@ export const connectionService = {
     }
   },
 };
+

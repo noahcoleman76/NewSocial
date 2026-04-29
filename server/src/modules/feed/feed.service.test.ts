@@ -59,6 +59,31 @@ describe('buildUnifiedFeed', () => {
     expect(feed[1].type).toBe('ad');
   });
 
+  it('includes the viewer own recent posts even without a connection', () => {
+    const feed = buildUnifiedFeed({
+      viewerId: 'viewer-1',
+      mutualConnectionIds: [],
+      ads: [],
+      now: new Date('2026-04-22T00:00:00.000Z'),
+      posts: [
+        {
+          postId: 'own-post',
+          authorId: 'viewer-1',
+          createdAt: '2026-04-21T00:00:00.000Z',
+          author: { id: 'viewer-1', username: 'noah', displayName: 'Noah', profileImageUrl: null, role: 'STANDARD' },
+          caption: 'My post',
+          images: [],
+          commentCount: 0,
+          likeCount: 0,
+          likedByMe: false,
+        },
+      ],
+    });
+
+    expect(feed).toHaveLength(1);
+    expect(feed[0].type).toBe('post');
+  });
+
   it('injects two ads when the feed has ten or more posts', () => {
     const feed = buildUnifiedFeed({
       mutualConnectionIds: ['u-1'],
@@ -83,3 +108,4 @@ describe('buildUnifiedFeed', () => {
     expect(feed.filter((item) => item.type === 'ad')).toHaveLength(2);
   });
 });
+

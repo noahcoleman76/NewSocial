@@ -31,4 +31,9 @@ export const notificationsService = {
   markAllRead: async (userId: string) => {
     await notificationsRepository.markAllRead(userId);
   },
+  clearAll: async (userId: string) => {
+    await notificationsRepository.clearAll(userId);
+  },
 };
+
+

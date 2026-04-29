@@ -28,17 +28,21 @@ const ensureActiveAccount = async (userId: string) => {
   return user;
 };
 
-const ensurePostVisible = async (viewerId: string, authorId: string) => {
-  if (viewerId === authorId) {
+const ensurePostVisible = async (viewer: Awaited<ReturnType<typeof ensureActiveAccount>>, authorId: string) => {
+  if (viewer.role === 'ADMIN') {
     return true;
   }
 
-  const familyRelation = await connectionRepository.findDirectFamilyRelation(viewerId, authorId);
+  if (viewer.id === authorId) {
+    return true;
+  }
+
+  const familyRelation = await connectionRepository.findDirectFamilyRelation(viewer.id, authorId);
   if (familyRelation) {
     return true;
   }
 
-  const [userAId, userBId] = normalizeConnectionPair(viewerId, authorId);
+  const [userAId, userBId] = normalizeConnectionPair(viewer.id, authorId);
   const connection = await connectionRepository.findConnectionByUsers(userAId, userBId);
 
   if (!connection || connection.status !== 'ACTIVE') {
@@ -120,14 +124,14 @@ export const postsService = {
   },
 
   getPost: async (viewerId: string, postId: string) => {
-    await ensureActiveAccount(viewerId);
+    const viewer = await ensureActiveAccount(viewerId);
 
     const post = await postsRepository.findPostById(postId, viewerId);
     if (!post || post.author.accountStatus !== 'ACTIVE') {
       throw new AppError('POST_NOT_FOUND', 'Post not found', 404);
     }
 
-    await ensurePostVisible(viewerId, post.author.id);
+    await ensurePostVisible(viewer, post.author.id);
 
     const comments = await postsRepository.listCommentsByPostId(postId);
 
@@ -141,45 +145,45 @@ export const postsService = {
   },
 
   likePost: async (viewerId: string, postId: string) => {
-    await ensureActiveAccount(viewerId);
+    const viewer = await ensureActiveAccount(viewerId);
 
     const post = await postsRepository.findPostById(postId, viewerId);
     if (!post || post.author.accountStatus !== 'ACTIVE') {
       throw new AppError('POST_NOT_FOUND', 'Post not found', 404);
     }
 
-    await ensurePostVisible(viewerId, post.author.id);
+    await ensurePostVisible(viewer, post.author.id);
     await postsRepository.createLike(postId, viewerId);
   },
 
   unlikePost: async (viewerId: string, postId: string) => {
-    await ensureActiveAccount(viewerId);
+    const viewer = await ensureActiveAccount(viewerId);
 
     const post = await postsRepository.findPostById(postId, viewerId);
     if (!post || post.author.accountStatus !== 'ACTIVE') {
       throw new AppError('POST_NOT_FOUND', 'Post not found', 404);
     }
 
-    await ensurePostVisible(viewerId, post.author.id);
+    await ensurePostVisible(viewer, post.author.id);
     await postsRepository.deleteLike(postId, viewerId);
   },
 
   listComments: async (viewerId: string, postId: string) => {
-    await ensureActiveAccount(viewerId);
+    const viewer = await ensureActiveAccount(viewerId);
 
     const post = await postsRepository.findPostById(postId, viewerId);
     if (!post || post.author.accountStatus !== 'ACTIVE') {
       throw new AppError('POST_NOT_FOUND', 'Post not found', 404);
     }
 
-    await ensurePostVisible(viewerId, post.author.id);
+    await ensurePostVisible(viewer, post.author.id);
 
     const comments = await postsRepository.listCommentsByPostId(postId);
     return comments.map((comment) => mapComment(comment, viewerId, post.author.id));
   },
 
   createComment: async (viewerId: string, postId: string, body: string) => {
-    await ensureActiveAccount(viewerId);
+    const viewer = await ensureActiveAccount(viewerId);
 
     const normalizedBody = body.trim();
     if (!normalizedBody) {
@@ -195,7 +199,7 @@ export const postsService = {
       throw new AppError('POST_NOT_FOUND', 'Post not found', 404);
     }
 
-    await ensurePostVisible(viewerId, post.author.id);
+    await ensurePostVisible(viewer, post.author.id);
     const comment = await postsRepository.createComment(postId, viewerId, normalizedBody);
 
     if (post.author.id !== viewerId) {
@@ -211,14 +215,14 @@ export const postsService = {
   },
 
   deleteComment: async (viewerId: string, postId: string, commentId: string) => {
-    await ensureActiveAccount(viewerId);
+    const viewer = await ensureActiveAccount(viewerId);
 
     const post = await postsRepository.findPostById(postId, viewerId);
     if (!post || post.author.accountStatus !== 'ACTIVE') {
       throw new AppError('POST_NOT_FOUND', 'Post not found', 404);
     }
 
-    await ensurePostVisible(viewerId, post.author.id);
+    await ensurePostVisible(viewer, post.author.id);
 
     const comment = await postsRepository.findCommentById(commentId);
     if (!comment || comment.post.id !== postId) {
@@ -233,7 +237,7 @@ export const postsService = {
   },
 
   deletePost: async (viewerId: string, postId: string) => {
-    await ensureActiveAccount(viewerId);
+    const viewer = await ensureActiveAccount(viewerId);
 
     const post = await postsRepository.findPostById(postId, viewerId);
     if (!post || post.author.accountStatus !== 'ACTIVE') {
@@ -247,3 +251,5 @@ export const postsService = {
     await postsRepository.deletePost(postId);
   },
 };
+
+

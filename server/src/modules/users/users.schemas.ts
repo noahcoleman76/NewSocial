@@ -24,4 +24,6 @@ export const updatePasswordSchema = z
     message: 'New passwords do not match',
     path: ['confirmPassword'],
   });
-
+export const deleteAccountSchema = z.object({
+  childOutcome: z.enum(['DELETE_CHILDREN', 'RELEASE_CHILDREN']).optional(),
+});

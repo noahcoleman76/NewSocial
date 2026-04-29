@@ -43,7 +43,7 @@ export const PostPage = () => {
   const queryClient = useQueryClient();
   const { postId = '' } = useParams();
   const [commentBody, setCommentBody] = useState('');
-  const [reportReason, setReportReason] = useState('');
+  const [reportStatus, setReportStatus] = useState<string | null>(null);
 
   const postQuery = useQuery({
     queryKey: ['post', postId],
@@ -113,22 +113,57 @@ export const PostPage = () => {
   });
 
   const reportPostMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async ({ reason, message }: { reason: string; message?: string }) => {
       await api.post('/reports', {
         targetType: 'POST',
         targetId: postId,
-        reason: reportReason,
+        reason,
+        message,
       });
     },
-    onSuccess: async () => {
-      setReportReason('');
+    onSuccess: () => {
+      setReportStatus('Report submitted for admin review.');
+    },
+    onError: () => {
+      setReportStatus('Could not submit this report right now.');
     },
   });
 
+  const handleReportPost = () => {
+    const reason = window.prompt('Reason for reporting this post');
+    if (!reason?.trim()) {
+      return;
+    }
+
+    const detail = window.prompt('Optional note for the admin');
+    setReportStatus(null);
+    reportPostMutation.mutate({
+      reason: reason.trim(),
+      message: detail?.trim() || undefined,
+    });
+  };
+
   const post = postQuery.data?.post;
 
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+      return;
+    }
+
+    navigate('/feed');
+  };
+
   return (
-    <PageCard title="Post" subtitle="Comments are oldest-first. You can delete your own posts and comments.">
+    <div className="space-y-4">
+      <button
+        className="rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+        onClick={handleBack}
+        type="button"
+      >
+        Back to feed
+      </button>
+      <PageCard title="Post" subtitle="Comments are oldest-first. You can delete your own posts and comments.">
       {postQuery.isLoading ? <p className="text-sm text-slate-500">Loading post...</p> : null}
       {postQuery.isError ? <p className="text-sm text-rose-600">Could not load this post right now.</p> : null}
       {post ? (
@@ -182,30 +217,18 @@ export const PostPage = () => {
               {!post.canDelete ? (
                 <button
                   className="rounded-full border border-slate-200 px-4 py-2 text-sm text-slate-700 disabled:opacity-60"
-                  disabled={reportPostMutation.isPending || !reportReason.trim()}
-                  onClick={() => reportPostMutation.mutate()}
+                  disabled={reportPostMutation.isPending}
+                  onClick={handleReportPost}
                   type="button"
                 >
                   {reportPostMutation.isPending ? 'Reporting...' : 'Report post'}
                 </button>
               ) : null}
             </div>
-            {!post.canDelete ? (
-              <div className="mt-4">
-                <input
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-3"
-                  maxLength={200}
-                  onChange={(event) => setReportReason(event.target.value)}
-                  placeholder="Reason for report"
-                  value={reportReason}
-                />
-                {reportPostMutation.isError ? (
-                  <p className="mt-2 text-sm text-rose-600">Could not submit this report right now.</p>
-                ) : null}
-                {reportPostMutation.isSuccess ? (
-                  <p className="mt-2 text-sm text-emerald-700">Report submitted for admin review.</p>
-                ) : null}
-              </div>
+            {reportStatus ? (
+              <p className={`mt-4 text-sm ${reportStatus === 'Report submitted for admin review.' ? 'text-emerald-700' : 'text-rose-600'}`}>
+                {reportStatus}
+              </p>
             ) : null}
           </article>
           <form
@@ -263,6 +286,9 @@ export const PostPage = () => {
           </div>
         </>
       ) : null}
-    </PageCard>
+      </PageCard>
+    </div>
   );
 };
+
+

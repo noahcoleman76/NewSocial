@@ -3,7 +3,130 @@ import { reportsService } from '@/modules/reports/reports.service';
 import { postsRepository } from '@/modules/posts/posts.repository';
 import { adminRepository } from './admin.repository';
 
+const mapModerationUser = (user: Awaited<ReturnType<typeof adminRepository.findUserForModeration>> extends infer T ? NonNullable<T> : never) => ({
+  id: user.id,
+  email: user.email,
+  username: user.username,
+  displayName: user.displayName,
+  role: user.role,
+  accountStatus: user.accountStatus,
+  parentId: user.parentId,
+  createdAt: user.createdAt,
+  parent: user.parent,
+  children: user.children,
+  childCount: user.children.length,
+});
+
+const assertNotSelf = (adminUserId: string, targetUserId: string, action: string) => {
+  if (adminUserId === targetUserId) {
+    throw new AppError('ADMIN_SELF_ACTION_FORBIDDEN', `Admins cannot ${action} their own account`, 403);
+  }
+};
+
+const loadModerationUser = async (userId: string) => {
+  const user = await adminRepository.findUserForModeration(userId);
+  if (!user) {
+    throw new AppError('USER_NOT_FOUND', 'User not found', 404);
+  }
+
+  return user;
+};
+
 export const adminService = {
+  getSummary: async () => ({
+    activeAccountCount: await adminRepository.countActiveAccounts(),
+  }),
+
+  listUsers: async () => {
+    const users = await adminRepository.listUsers();
+    return users.map(mapModerationUser);
+  },
+
+  disableUser: async (adminUserId: string, targetUserId: string) => {
+    assertNotSelf(adminUserId, targetUserId, 'disable');
+    const user = await loadModerationUser(targetUserId);
+
+    await adminRepository.setAccountStatus([targetUserId], 'DISABLED');
+    await adminRepository.createAuditLog({
+      adminUserId,
+      actionType: 'DISABLE_ACCOUNT',
+      targetType: 'ACCOUNT',
+      targetId: targetUserId,
+      metadata: {
+        role: user.role,
+        childCount: user.children.length,
+      },
+    });
+  },
+
+  enableUser: async (adminUserId: string, targetUserId: string) => {
+    assertNotSelf(adminUserId, targetUserId, 'enable');
+    const user = await loadModerationUser(targetUserId);
+
+    if (user.role === 'CHILD' && (!user.parent || user.parent.accountStatus !== 'ACTIVE')) {
+      throw new AppError('CHILD_ENABLE_REQUIRES_ACTIVE_MANAGER', 'Child accounts can only be enabled with an active manager', 422);
+    }
+
+    await adminRepository.setAccountStatus([targetUserId], 'ACTIVE');
+    await adminRepository.createAuditLog({
+      adminUserId,
+      actionType: 'ENABLE_ACCOUNT',
+      targetType: 'ACCOUNT',
+      targetId: targetUserId,
+      metadata: {
+        role: user.role,
+        parentId: user.parentId,
+      },
+    });
+  },
+
+  deleteUser: async (adminUserId: string, targetUserId: string) => {
+    assertNotSelf(adminUserId, targetUserId, 'delete');
+    const user = await loadModerationUser(targetUserId);
+    const targetIds = [user.id, ...user.children.map((child) => child.id)];
+
+    await adminRepository.deleteUsersCompletely(targetIds);
+    await adminRepository.createAuditLog({
+      adminUserId,
+      actionType: 'DELETE_ACCOUNT',
+      targetType: 'ACCOUNT',
+      targetId: targetUserId,
+      metadata: {
+        deletedUserIds: targetIds,
+        role: user.role,
+      },
+    });
+  },
+
+  promoteUserToAdmin: async (adminUserId: string, targetUserId: string) => {
+    assertNotSelf(adminUserId, targetUserId, 'promote');
+    const user = await loadModerationUser(targetUserId);
+
+    if (user.accountStatus !== 'ACTIVE') {
+      throw new AppError('ADMIN_PROMOTION_ACCOUNT_INACTIVE', 'Only active accounts can be promoted to admin', 422);
+    }
+
+    if (user.role !== 'STANDARD' || user.parentId || user.children.length > 0) {
+      throw new AppError(
+        'ADMIN_PROMOTION_NOT_ALLOWED',
+        'Only standard accounts without child accounts can be promoted to admin',
+        422,
+      );
+    }
+
+    await adminRepository.promoteUserToAdmin(targetUserId);
+    await adminRepository.createAuditLog({
+      adminUserId,
+      actionType: 'PROMOTE_TO_ADMIN',
+      targetType: 'ACCOUNT',
+      targetId: targetUserId,
+      metadata: {
+        previousRole: user.role,
+        username: user.username,
+      },
+    });
+  },
+
   listAuditLogs: async () => {
     const items = await adminRepository.listAuditLogs();
 
@@ -17,6 +140,7 @@ export const adminService = {
       metadata: item.metadata,
     }));
   },
+
   listOpenReports: reportsService.listOpenReports,
   deleteReportedPost: async (adminUserId: string, postId: string) => {
     const post = await postsRepository.findPostById(postId, adminUserId);
@@ -25,6 +149,7 @@ export const adminService = {
     }
 
     await adminRepository.deletePost(postId);
+    await adminRepository.resolveOpenPostReports(postId, adminUserId);
     await adminRepository.createAuditLog({
       adminUserId,
       actionType: 'DELETE_POST',
@@ -36,3 +161,9 @@ export const adminService = {
     });
   },
 };
+
+
+
+
+
+

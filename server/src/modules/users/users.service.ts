@@ -6,6 +6,7 @@ import { connectionRepository } from '@/modules/connections/connection.repositor
 import { normalizeConnectionPair } from '@/modules/connections/connection.rules';
 import { toAuthUser } from '@/modules/auth/auth.mapper';
 import { authService } from '@/modules/auth/auth.service';
+import { resolveParentDeletionPlan } from '@/modules/family/family.rules';
 import { usersRepository } from './users.repository';
 
 export const usersService = {
@@ -74,13 +75,57 @@ export const usersService = {
     return result;
   },
 
+
+  deleteMe: async (userId: string, childOutcome?: 'DELETE_CHILDREN' | 'RELEASE_CHILDREN') => {
+    const user = await usersRepository.findDeletionTarget(userId);
+    if (!user) {
+      throw new AppError('USER_NOT_FOUND', 'User not found', 404);
+    }
+
+    if (user.role === 'CHILD') {
+      throw new AppError('CHILD_SELF_DELETE_FORBIDDEN', 'Child accounts must be deleted or released by their family manager', 403);
+    }
+
+    const familyPlan = resolveParentDeletionPlan(user.children, childOutcome);
+    const childIds = user.children.map((child) => child.id);
+    const childrenToDelete = familyPlan.filter((item) => item.action === 'DELETE').map((item) => item.childId);
+    const childrenToRelease = familyPlan.filter((item) => item.action === 'RELEASE').map((item) => item.childId);
+
+    if (childrenToRelease.length > 0) {
+      await usersRepository.releaseChildren(childrenToRelease);
+    }
+
+    await usersRepository.deleteUsersCompletely([user.id, ...childrenToDelete]);
+
+    return {
+      deletedUserId: user.id,
+      releasedChildIds: childrenToRelease,
+      deletedChildIds: childrenToDelete,
+      hadChildren: childIds.length > 0,
+    };
+  },
   getProfile: async (viewerId: string, username: string) => {
-    const target = await usersRepository.findByUsername(username);
+    const viewer = await usersRepository.findById(viewerId);
+    const isAdminViewer = viewer?.role === 'ADMIN';
+    const target = isAdminViewer
+      ? await usersRepository.findAnyByUsername(username)
+      : await usersRepository.findByUsername(username);
+
     if (!target) {
       throw new AppError('PROFILE_NOT_FOUND', 'Profile not found', 404);
     }
 
     const isSelf = target.id === viewerId;
+    const canPromoteToAdmin = Boolean(
+      isAdminViewer &&
+        !isSelf &&
+        target.accountStatus === 'ACTIVE' &&
+        target.role === 'STANDARD' &&
+        !target.parentId &&
+        target.children.length === 0,
+    );
+    const canDisableAccount = Boolean(isAdminViewer && !isSelf && target.accountStatus === 'ACTIVE');
+    const canEnableAccount = Boolean(isAdminViewer && !isSelf && target.accountStatus === 'DISABLED');
     const [userAId, userBId] = normalizeConnectionPair(viewerId, target.id);
     const [connection, familyRelation, outgoingRequest, incomingRequest] = await Promise.all([
       isSelf ? Promise.resolve(null) : connectionRepository.findConnectionByUsers(userAId, userBId),
@@ -104,7 +149,7 @@ export const usersService = {
       relationship = 'INCOMING_REQUEST';
     }
 
-    const canSeePosts = isSelf || relationship === 'CONNECTED';
+    const canSeePosts = Boolean(isAdminViewer || isSelf || relationship === 'CONNECTED');
     const posts = canSeePosts ? await usersRepository.findPostsByAuthorId(target.id, viewerId) : [];
     const mappedPosts = posts.map((post) => ({
       id: post.id,
@@ -125,6 +170,12 @@ export const usersService = {
         displayName: target.displayName,
         bio: target.bio,
         profileImageUrl: target.profileImageUrl,
+        role: target.role,
+        accountStatus: target.accountStatus,
+        canPromoteToAdmin,
+        canDisableAccount,
+        canEnableAccount,
+        canSeePosts,
         isFamilyLinked: target.role === 'CHILD' || Boolean(target.parentId),
         isFamilyConnection: Boolean(familyRelation),
         isSelf,
@@ -138,3 +189,7 @@ export const usersService = {
     };
   },
 };
+
+
+
+

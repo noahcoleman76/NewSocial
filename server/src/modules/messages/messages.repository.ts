@@ -57,9 +57,79 @@ export const messagesRepository = {
           some: {
             userId,
           },
+          every: {
+            user: {
+              accountStatus: 'ACTIVE',
+            },
+          },
         },
       },
       include: conversationInclude,
+    }),
+
+  findMessageForUser: (messageId: string, userId: string) =>
+    prisma.message.findFirst({
+      where: {
+        id: messageId,
+        conversation: {
+          participants: {
+            some: {
+              userId,
+            },
+          },
+        },
+      },
+      include: {
+        ...messageInclude,
+        conversation: {
+          include: {
+            participants: {
+              include: {
+                user: {
+                  select: participantUserSelect,
+                },
+              },
+            },
+          },
+        },
+      },
+    }),
+
+  findMessageByIdWithConversation: (messageId: string) =>
+    prisma.message.findUnique({
+      where: {
+        id: messageId,
+      },
+      include: {
+        ...messageInclude,
+        conversation: {
+          include: {
+            participants: {
+              include: {
+                user: {
+                  select: participantUserSelect,
+                },
+              },
+            },
+          },
+        },
+      },
+    }),
+
+  listContextMessages: (conversationId: string, anchorCreatedAt: Date) =>
+    prisma.message.findMany({
+      where: {
+        conversationId,
+        createdAt: {
+          gte: new Date(anchorCreatedAt.getTime() - 1000 * 60 * 60 * 24),
+          lte: new Date(anchorCreatedAt.getTime() + 1000 * 60 * 60 * 24),
+        },
+      },
+      orderBy: {
+        createdAt: 'asc',
+      },
+      take: 12,
+      include: messageInclude,
     }),
 
   findConversationByDirectKey: (directKey: string) =>
@@ -83,6 +153,15 @@ export const messagesRepository = {
     prisma.conversationParticipant.findMany({
       where: {
         userId,
+        conversation: {
+          participants: {
+            every: {
+              user: {
+                accountStatus: 'ACTIVE',
+              },
+            },
+          },
+        },
       },
       orderBy: {
         conversation: {
@@ -155,3 +234,5 @@ export const messagesRepository = {
       },
     }),
 };
+
+

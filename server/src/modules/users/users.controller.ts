@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import { AppError } from '@/lib/errors';
-import { setRefreshCookie } from '@/modules/auth/auth.cookies';
+import { clearRefreshCookie, setRefreshCookie } from '@/modules/auth/auth.cookies';
 import { usersService } from './users.service';
 
 export const usersController = {
@@ -39,7 +39,15 @@ export const usersController = {
     const user = await usersService.updateProfileImage(req.auth.sub, file);
     res.json({ user });
   },
-  changePassword: async (req: Request, res: Response) => {
+  deleteMe: async (req: Request, res: Response) => {
+    if (!req.auth?.sub) {
+      throw new AppError('UNAUTHORIZED', 'Authentication required', 401);
+    }
+
+    const result = await usersService.deleteMe(req.auth.sub, req.body.childOutcome);
+    clearRefreshCookie(res);
+    res.json(result);
+  },  changePassword: async (req: Request, res: Response) => {
     if (!req.auth?.sub) {
       throw new AppError('UNAUTHORIZED', 'Authentication required', 401);
     }
@@ -55,3 +63,4 @@ export const usersController = {
     });
   },
 };
+

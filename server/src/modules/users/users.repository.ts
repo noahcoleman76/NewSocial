@@ -24,7 +24,29 @@ export const usersRepository = {
         username: username.toLowerCase(),
         accountStatus: 'ACTIVE',
       },
-      select: profileUserSelect,
+      select: {
+        ...profileUserSelect,
+        children: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    }),
+
+  findAnyByUsername: (username: string) =>
+    prisma.user.findFirst({
+      where: {
+        username: username.toLowerCase(),
+      },
+      select: {
+        ...profileUserSelect,
+        children: {
+          select: {
+            id: true,
+          },
+        },
+      },
     }),
 
   findByEmail: (email: string) =>
@@ -80,6 +102,73 @@ export const usersRepository = {
       },
     }),
 
+
+  findDeletionTarget: (userId: string) =>
+    prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        children: {
+          select: {
+            id: true,
+            role: true,
+            parentId: true,
+            accountStatus: true,
+          },
+        },
+      },
+    }),
+
+  releaseChildren: (childIds: string[]) =>
+    prisma.user.updateMany({
+      where: {
+        id: {
+          in: childIds,
+        },
+        role: 'CHILD',
+      },
+      data: {
+        role: 'STANDARD',
+        parentId: null,
+      },
+    }),
+
+  deleteUsersCompletely: async (userIds: string[]) =>
+    prisma.$transaction(async (tx) => {
+      const conversations = await tx.conversation.findMany({
+        where: {
+          participants: {
+            some: {
+              userId: {
+                in: userIds,
+              },
+            },
+          },
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      const conversationIds = conversations.map((conversation) => conversation.id);
+
+      if (conversationIds.length > 0) {
+        await tx.conversation.deleteMany({
+          where: {
+            id: {
+              in: conversationIds,
+            },
+          },
+        });
+      }
+
+      await tx.user.deleteMany({
+        where: {
+          id: {
+            in: userIds,
+          },
+        },
+      });
+    }),
   findPostsByAuthorId: (authorId: string, viewerId: string) =>
     prisma.post.findMany({
       where: {
@@ -117,3 +206,6 @@ export const usersRepository = {
       },
     }),
 };
+
+
+

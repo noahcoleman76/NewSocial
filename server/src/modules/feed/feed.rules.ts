@@ -10,11 +10,12 @@ export const filterFeedPosts = (
   posts: FeedPostCandidate[],
   mutualConnectionIds: string[],
   now = new Date(),
+  viewerId?: string,
 ) => {
   const cutoff = new Date(now.getTime() - FEED_WINDOW_DAYS * 24 * 60 * 60 * 1000);
 
   return posts
-    .filter((post) => mutualConnectionIds.includes(post.authorId))
+    .filter((post) => post.authorId === viewerId || mutualConnectionIds.includes(post.authorId))
     .filter((post) => new Date(post.createdAt) >= cutoff)
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .map<FeedPostItem>((post) => ({
@@ -53,3 +54,4 @@ export const injectFeedAds = (posts: FeedPostItem[], ads: FeedAdItem[]) => {
 
   return insertAt(withFirst, ads[1] ?? ads[0], secondIndex);
 };
+

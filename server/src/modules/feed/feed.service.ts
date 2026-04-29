@@ -10,13 +10,15 @@ export const buildUnifiedFeed = ({
   mutualConnectionIds,
   ads,
   now,
+  viewerId,
 }: {
   posts: FeedInput;
   mutualConnectionIds: string[];
   ads: FeedAdItem[];
   now?: Date;
+  viewerId?: string;
 }): FeedItem[] => {
-  const visiblePosts = filterFeedPosts(posts, mutualConnectionIds, now);
+  const visiblePosts = filterFeedPosts(posts, mutualConnectionIds, now, viewerId);
   return injectFeedAds(visiblePosts, ads);
 };
 
@@ -45,6 +47,7 @@ export const feedService = {
         canDelete: post.author.id === userId,
       })),
       mutualConnectionIds: visibleConnectionIds,
+      viewerId: userId,
       ads: ads.map<FeedAdItem>((ad) => ({
         type: 'ad',
         id: ad.id,
@@ -57,3 +60,4 @@ export const feedService = {
     });
   },
 };
+

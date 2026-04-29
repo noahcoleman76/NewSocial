@@ -34,6 +34,7 @@ export const SettingsPage = () => {
   const user = useAuthStore((state) => state.currentUser);
   const setCurrentUser = useAuthStore((state) => state.setCurrentUser);
   const applySession = useAuthStore((state) => state.applySession);
+  const logout = useAuthStore((state) => state.logout);
   const [profileFields, setProfileFields] = useState({
     displayName: '',
     username: '',
@@ -49,6 +50,7 @@ export const SettingsPage = () => {
   });
   const [profileMessage, setProfileMessage] = useState<string | null>(null);
   const [passwordMessage, setPasswordMessage] = useState<string | null>(null);
+  const [deleteMessage, setDeleteMessage] = useState<string | null>(null);
 
   const previewUrl = useMemo(() => {
     if (!selectedImage) {
@@ -124,6 +126,37 @@ export const SettingsPage = () => {
     },
   });
 
+
+  const deleteAccountMutation = useMutation({
+    mutationFn: async (childOutcome?: 'DELETE_CHILDREN' | 'RELEASE_CHILDREN') => {
+      await api.delete('/users/me', {
+        data: {
+          childOutcome,
+        },
+      });
+    },
+    onSuccess: async () => {
+      await queryClient.clear();
+      await logout().catch(() => undefined);
+      window.location.assign('/login');
+    },
+    onError: (error) => {
+      setDeleteMessage(readErrorMessage(error, 'Could not delete your account right now.'));
+    },
+  });
+
+  const handleDeleteAccount = (childOutcome?: 'DELETE_CHILDREN' | 'RELEASE_CHILDREN') => {
+    const message = childOutcome === 'RELEASE_CHILDREN'
+      ? 'Delete your account and release all child accounts into standard accounts? This cannot be undone.'
+      : childOutcome === 'DELETE_CHILDREN'
+        ? 'Delete your account and all linked child accounts? This cannot be undone.'
+        : 'Delete your account permanently? This cannot be undone.';
+
+    if (window.confirm(message)) {
+      setDeleteMessage(null);
+      deleteAccountMutation.mutate(childOutcome);
+    }
+  };
   const passwordMutation = useMutation({
     mutationFn: async () => {
       const { data } = await api.patch<ChangePasswordResponse>('/users/me/password', passwordFields);
@@ -326,19 +359,44 @@ export const SettingsPage = () => {
       {user.role !== 'CHILD' ? (
         <PageCard
           title="Delete account"
-          subtitle="Child accounts cannot delete themselves. A family manager must delete or release a child account."
+          subtitle="Deleting your account permanently removes your profile, posts, messages, conversations, connections, and notifications."
         >
-          <div className="flex flex-wrap gap-3">
-            <button className="rounded-full border border-rose-200 px-5 py-3 text-sm font-medium text-rose-700">
-              Delete children and account
-            </button>
-            <button className="rounded-full border border-amber-200 px-5 py-3 text-sm font-medium text-amber-700">
-              Release children and delete account
-            </button>
+          <div className="space-y-4">
+            {user.hasChildren ? (
+              <div className="flex flex-wrap gap-3">
+                <button
+                  className="rounded-full border border-rose-200 px-5 py-3 text-sm font-medium text-rose-700 disabled:opacity-60"
+                  disabled={deleteAccountMutation.isPending}
+                  onClick={() => handleDeleteAccount('DELETE_CHILDREN')}
+                  type="button"
+                >
+                  {deleteAccountMutation.isPending ? 'Deleting...' : 'Delete children and account'}
+                </button>
+                <button
+                  className="rounded-full border border-amber-200 px-5 py-3 text-sm font-medium text-amber-700 disabled:opacity-60"
+                  disabled={deleteAccountMutation.isPending}
+                  onClick={() => handleDeleteAccount('RELEASE_CHILDREN')}
+                  type="button"
+                >
+                  {deleteAccountMutation.isPending ? 'Deleting...' : 'Release children and delete account'}
+                </button>
+              </div>
+            ) : (
+              <button
+                className="rounded-full border border-rose-200 px-5 py-3 text-sm font-medium text-rose-700 disabled:opacity-60"
+                disabled={deleteAccountMutation.isPending}
+                onClick={() => handleDeleteAccount()}
+                type="button"
+              >
+                {deleteAccountMutation.isPending ? 'Deleting...' : 'Delete account'}
+              </button>
+            )}
+            {deleteMessage ? <p className="text-sm text-rose-600">{deleteMessage}</p> : null}
           </div>
         </PageCard>
       ) : null}
     </div>
   );
 };
+
 

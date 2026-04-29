@@ -33,4 +33,14 @@ export const notificationsController = {
     await notificationsService.markAllRead(req.auth.sub);
     res.status(204).send();
   },
-};
+  clearAll: async (req: Request, res: Response) => {
+    if (!req.auth?.sub) {
+      throw new AppError('UNAUTHORIZED', 'Authentication required', 401);
+    }
+
+    await notificationsService.clearAll(req.auth.sub);
+    res.status(204).send();
+  },};
+
+
+

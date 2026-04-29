@@ -40,13 +40,13 @@ export const connectionRepository = {
       },
     }),
 
-  searchUsers: (requesterId: string, query: string) =>
+  searchUsers: (requesterId: string, query: string, includeDisabled = false) =>
     prisma.user.findMany({
       where: {
         id: {
           not: requesterId,
         },
-        accountStatus: 'ACTIVE',
+        ...(includeDisabled ? {} : { accountStatus: 'ACTIVE' as const }),
         OR: [
           {
             username: {
@@ -116,6 +116,8 @@ export const connectionRepository = {
       where: {
         status: 'ACTIVE',
         OR: [{ userAId: userId }, { userBId: userId }],
+        userA: { accountStatus: 'ACTIVE' },
+        userB: { accountStatus: 'ACTIVE' },
       },
       orderBy: {
         createdAt: 'asc',
@@ -135,6 +137,8 @@ export const connectionRepository = {
       where: {
         status: 'ACTIVE',
         OR: [{ userAId: userId }, { userBId: userId }],
+        userA: { accountStatus: 'ACTIVE' },
+        userB: { accountStatus: 'ACTIVE' },
       },
       select: {
         userAId: true,
@@ -185,6 +189,8 @@ export const connectionRepository = {
       where: {
         status: 'PENDING_MANAGER_APPROVAL',
         OR: [{ userAId: userId }, { userBId: userId }],
+        userA: { accountStatus: 'ACTIVE' },
+        userB: { accountStatus: 'ACTIVE' },
       },
       orderBy: {
         createdAt: 'asc',
@@ -204,6 +210,7 @@ export const connectionRepository = {
       where: {
         receiverId: userId,
         status: 'PENDING',
+        sender: { accountStatus: 'ACTIVE' },
       },
       orderBy: {
         createdAt: 'asc',
@@ -220,6 +227,7 @@ export const connectionRepository = {
       where: {
         senderId: userId,
         status: 'PENDING',
+        receiver: { accountStatus: 'ACTIVE' },
       },
       orderBy: {
         createdAt: 'asc',
@@ -313,3 +321,5 @@ export const connectionRepository = {
       },
     }),
 };
+
+

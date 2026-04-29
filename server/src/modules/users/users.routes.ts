@@ -4,11 +4,12 @@ import { validate } from '@/lib/validate';
 import { authRequired } from '@/middleware/auth-required';
 import { profileUpload } from '@/modules/uploads/upload.middleware';
 import { usersController } from './users.controller';
-import { updatePasswordSchema, updateProfileSchema } from './users.schemas';
+import { deleteAccountSchema, updatePasswordSchema, updateProfileSchema } from './users.schemas';
 
 export const usersRouter = Router();
 
 usersRouter.patch('/me', authRequired, validate(updateProfileSchema), asyncHandler(usersController.updateMe));
+usersRouter.delete('/me', authRequired, validate(deleteAccountSchema), asyncHandler(usersController.deleteMe));
 usersRouter.patch(
   '/me/profile-image',
   authRequired,
@@ -23,3 +24,4 @@ usersRouter.patch(
 );
 usersRouter.get('/search', authRequired, asyncHandler(usersController.search));
 usersRouter.get('/:username', authRequired, asyncHandler(usersController.getProfile));
+

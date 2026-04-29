@@ -26,6 +26,15 @@ export const NotificationsPage = () => {
     },
   });
 
+  const clearAllMutation = useMutation({
+    mutationFn: async () => {
+      await api.delete('/notifications');
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    },
+  });
+
   return (
     <PageCard title="Notifications" subtitle="Only connection accepted and comment notifications appear here.">
       <div className="mb-4">
@@ -40,13 +49,11 @@ export const NotificationsPage = () => {
           </button>
           <button
             className="rounded-full border border-slate-200 px-4 py-2 text-sm text-slate-700 disabled:opacity-60"
-            disabled={!notificationsQuery.data?.length}
-            onClick={() => {
-              queryClient.setQueryData(['notifications'], []);
-            }}
+            disabled={!notificationsQuery.data?.length || clearAllMutation.isPending}
+            onClick={() => clearAllMutation.mutate()}
             type="button"
           >
-            Clear all
+            {clearAllMutation.isPending ? 'Clearing...' : 'Clear all'}
           </button>
         </div>
       </div>
@@ -83,3 +90,4 @@ export const NotificationsPage = () => {
     </PageCard>
   );
 };
+

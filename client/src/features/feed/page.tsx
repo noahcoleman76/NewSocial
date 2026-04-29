@@ -14,6 +14,7 @@ export const FeedPage = () => {
   const queryClient = useQueryClient();
   const [caption, setCaption] = useState('');
   const [files, setFiles] = useState<File[]>([]);
+  const [reportStatus, setReportStatus] = useState<string | null>(null);
 
   const feedQuery = useQuery({
     queryKey: ['feed'],
@@ -62,6 +63,37 @@ export const FeedPage = () => {
     },
   });
 
+  const reportPostMutation = useMutation({
+    mutationFn: async ({ postId, reason, message }: { postId: string; reason: string; message?: string }) => {
+      await api.post('/reports', {
+        targetType: 'POST',
+        targetId: postId,
+        reason,
+        message,
+      });
+    },
+    onSuccess: () => {
+      setReportStatus('Post reported for admin review.');
+    },
+    onError: () => {
+      setReportStatus('Could not report this post right now.');
+    },
+  });
+
+  const handleReportPost = (postId: string) => {
+    const reason = window.prompt('Reason for reporting this post');
+    if (!reason?.trim()) {
+      return;
+    }
+
+    const detail = window.prompt('Optional note for the admin');
+    setReportStatus(null);
+    reportPostMutation.mutate({
+      postId,
+      reason: reason.trim(),
+      message: detail?.trim() || undefined,
+    });
+  };
   const deletePostMutation = useMutation({
     mutationFn: async (postId: string) => {
       await api.delete(`/posts/${postId}`);
@@ -123,6 +155,11 @@ export const FeedPage = () => {
       <PageCard title="Feed" subtitle="Chronological posts from mutual connections, limited to the last 14 days.">
         {feedQuery.isLoading ? <p className="text-sm text-slate-500">Loading feed...</p> : null}
         {feedQuery.isError ? <p className="text-sm text-rose-600">Could not load the feed right now.</p> : null}
+        {reportStatus ? (
+          <p className={`mb-4 text-sm ${reportStatus === 'Post reported for admin review.' ? 'text-emerald-700' : 'text-rose-600'}`}>
+            {reportStatus}
+          </p>
+        ) : null}
         {feedQuery.data ? (
           <>
             <div className="space-y-4">
@@ -173,7 +210,16 @@ export const FeedPage = () => {
                         >
                           {deletePostMutation.isPending ? 'Deleting...' : 'Delete'}
                         </button>
-                      ) : null}
+                      ) : (
+                        <button
+                          className="rounded-full border border-slate-200 px-4 py-2 text-sm text-slate-600 disabled:opacity-60"
+                          disabled={reportPostMutation.isPending}
+                          onClick={() => handleReportPost(item.postId)}
+                          type="button"
+                        >
+                          {reportPostMutation.isPending ? 'Reporting...' : 'Report post'}
+                        </button>
+                      )}
                     </div>
                   </article>
                 ) : (
@@ -192,3 +238,4 @@ export const FeedPage = () => {
     </div>
   );
 };
+
