@@ -1,10 +1,10 @@
-import { z } from 'zod';
+﻿import { z } from 'zod';
 
 const USERNAME_REGEX = /^[a-zA-Z0-9._]{3,20}$/;
 const CHILD_ACCESS_CODE_LENGTH = 8;
 
 export const loginSchema = z.object({
-  email: z.email(),
+  identifier: z.string().trim().min(1).max(254),
   password: z.string().min(8).max(128),
 });
 
@@ -34,3 +34,4 @@ export const changePasswordSchema = z.object({
   currentPassword: z.string().min(8).max(128),
   newPassword: z.string().min(8).max(128),
 });
+

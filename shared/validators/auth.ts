@@ -1,8 +1,8 @@
-import { z } from 'zod';
+﻿import { z } from 'zod';
 import { BIO_MAX_LENGTH, CHILD_ACCESS_CODE_LENGTH, USERNAME_REGEX } from '../constants/domain';
 
 export const loginSchema = z.object({
-  email: z.email(),
+  identifier: z.string().trim().min(1).max(254),
   password: z.string().min(8).max(128),
 });
 
@@ -39,3 +39,4 @@ export const profileUpdateSchema = z.object({
   email: z.email().optional(),
   bio: z.string().max(BIO_MAX_LENGTH).nullable().optional(),
 });
+

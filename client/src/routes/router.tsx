@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+﻿import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { AppShell } from '@/components/app-shell';
 import { ProtectedRoute } from '@/components/protected-route';
 import { AuthPage } from '@/features/auth/pages';
@@ -69,3 +69,6 @@ export const router = createBrowserRouter([
     ],
   },
 ]);
+
+
+

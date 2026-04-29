@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+﻿import { useMemo, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import { useAuthStore } from '@/app/auth-store';
@@ -94,7 +94,7 @@ export const SettingsPage = () => {
       ]);
     },
     onError: (error) => {
-      setProfileMessage(readErrorMessage(error, 'Could not save your profile right now.'));
+      setProfileMessage(readErrorMessage(error, 'Could not save profile.'));
     },
   });
 
@@ -123,7 +123,7 @@ export const SettingsPage = () => {
       ]);
     },
     onError: (error) => {
-      setProfileMessage(readErrorMessage(error, 'Could not update your profile image right now.'));
+      setProfileMessage(readErrorMessage(error, 'Could not update photo.'));
     },
   });
 
@@ -142,16 +142,16 @@ export const SettingsPage = () => {
       window.location.assign('/login');
     },
     onError: (error) => {
-      setDeleteMessage(readErrorMessage(error, 'Could not delete your account right now.'));
+      setDeleteMessage(readErrorMessage(error, 'Could not delete account.'));
     },
   });
 
   const handleDeleteAccount = (childOutcome?: 'DELETE_CHILDREN' | 'RELEASE_CHILDREN') => {
     const message = childOutcome === 'RELEASE_CHILDREN'
-      ? 'Delete your account and release all child accounts into standard accounts? This cannot be undone.'
+      ? 'Delete your account and release all child accounts into standard accounts? Permanent.'
       : childOutcome === 'DELETE_CHILDREN'
-        ? 'Delete your account and all linked child accounts? This cannot be undone.'
-        : 'Delete your account permanently? This cannot be undone.';
+        ? 'Delete your account and all linked child accounts? Permanent.'
+        : 'Delete your account permanently? Permanent.';
 
     if (window.confirm(message)) {
       setDeleteMessage(null);
@@ -176,7 +176,7 @@ export const SettingsPage = () => {
       await queryClient.invalidateQueries({ queryKey: ['profile'] });
     },
     onError: (error) => {
-      setPasswordMessage(readErrorMessage(error, 'Could not change your password right now.'));
+      setPasswordMessage(readErrorMessage(error, 'Could not change password.'));
     },
   });
 
@@ -193,20 +193,20 @@ export const SettingsPage = () => {
 
   return (
     <div className="space-y-6">
-      <PageCard title="Settings" subtitle="Update your profile, photo, and account details.">
+      <PageCard title="Settings">
         <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
           <div className="space-y-4">
-            <div className="rounded-[1.75rem] border border-slate-200 bg-slate-50 p-5">
+            <div className="rounded-[1.75rem] border border-white/10 bg-white/7 p-5">
               {previewUrl ? (
                 <img alt="" className="h-28 w-28 rounded-full object-cover" src={previewUrl} />
               ) : (
-                <div className="flex h-28 w-28 items-center justify-center rounded-full bg-slate-200 text-3xl font-semibold text-slate-600">
+                <div className="flex h-28 w-28 items-center justify-center rounded-full bg-white/15 text-3xl font-semibold text-[#F5F5F5]/75">
                   {user.displayName.charAt(0).toUpperCase()}
                 </div>
               )}
-              <p className="mt-4 text-sm font-medium text-slate-900">{user.displayName}</p>
-              <p className="mt-1 text-sm text-slate-500">@{user.username}</p>
-              <label className="mt-4 block cursor-pointer rounded-full border border-slate-200 px-4 py-3 text-center text-sm font-medium text-slate-700 transition hover:bg-white">
+              <p className="mt-4 text-sm font-medium text-[#F5F5F5]">{user.displayName}</p>
+              <p className="mt-1 text-sm text-[#F5F5F5]/60">@{user.username}</p>
+              <label className="mt-4 block cursor-pointer rounded-full border border-white/10 px-4 py-3 text-center text-sm font-medium text-[#F5F5F5]/85 transition hover:bg-white/12">
                 Choose new profile image
                 <input
                   accept="image/png,image/jpeg,image/webp"
@@ -217,7 +217,7 @@ export const SettingsPage = () => {
               </label>
               {selectedImage ? (
                 <button
-                  className="mt-3 rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
+                  className="mt-3 rounded-full bg-[#FF5A2F] px-4 py-2 text-sm font-medium text-[#0D0D0D] disabled:opacity-60"
                   disabled={imageMutation.isPending}
                   onClick={() => imageMutation.mutate()}
                   type="button"
@@ -240,36 +240,36 @@ export const SettingsPage = () => {
               }}
             >
               <input
-                className="rounded-2xl border border-slate-200 px-4 py-3"
+                className="rounded-2xl border border-white/10 px-4 py-3"
                 onChange={(event) => setProfileFields((current) => ({ ...current, displayName: event.target.value }))}
                 placeholder={user.displayName}
                 value={profileFields.displayName}
               />
               <input
-                className="rounded-2xl border border-slate-200 px-4 py-3"
+                className="rounded-2xl border border-white/10 px-4 py-3"
                 onChange={(event) => setProfileFields((current) => ({ ...current, username: event.target.value }))}
                 placeholder={user.username}
                 value={profileFields.username}
               />
               <input
-                className="rounded-2xl border border-slate-200 px-4 py-3"
+                className="rounded-2xl border border-white/10 px-4 py-3"
                 onChange={(event) => setProfileFields((current) => ({ ...current, email: event.target.value }))}
                 placeholder={user.email}
                 type="email"
                 value={profileFields.email}
               />
-              <div className="rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-500">
+              <div className="rounded-2xl border border-white/10 px-4 py-3 text-sm text-[#F5F5F5]/60">
                 {user.role === 'CHILD' ? 'Child account' : user.hasChildren ? 'Managing family' : 'Standard account'}
               </div>
               <textarea
-                className="min-h-28 rounded-[1.5rem] border border-slate-200 px-4 py-3 md:col-span-2"
+                className="min-h-28 rounded-[1.5rem] border border-white/10 px-4 py-3 md:col-span-2"
                 onChange={(event) => setProfileFields((current) => ({ ...current, bio: event.target.value }))}
                 placeholder={user.bio ?? 'Add a short bio'}
                 value={profileFields.bio}
               />
               <div className="md:col-span-2">
                 <button
-                  className="rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white disabled:opacity-60"
+                  className="rounded-full bg-[#FF5A2F] px-5 py-3 text-sm font-medium text-[#0D0D0D] disabled:opacity-60"
                   disabled={!canSaveProfile || profileMutation.isPending}
                   type="submit"
                 >
@@ -278,7 +278,7 @@ export const SettingsPage = () => {
               </div>
             </form>
             {profileMessage ? (
-              <p className={`text-sm ${profileMessage.includes('saved') || profileMessage.includes('updated') ? 'text-emerald-700' : 'text-rose-600'}`}>
+              <p className={`text-sm ${profileMessage.includes('saved') || profileMessage.includes('updated') ? 'text-[#FF5A2F]' : 'text-[#FF5A2F]'}`}>
                 {profileMessage}
               </p>
             ) : null}
@@ -286,10 +286,10 @@ export const SettingsPage = () => {
         </div>
       </PageCard>
 
-      <PageCard title="Password" subtitle="Update your password without changing the rest of your profile.">
+      <PageCard title="Password">
         <div className="space-y-4">
           <button
-            className="rounded-full border border-slate-200 px-5 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+            className="rounded-full border border-white/10 px-5 py-3 text-sm font-medium text-[#F5F5F5]/85 transition hover:bg-white/12/5"
             onClick={() => {
               setPasswordMessage(null);
               setShowPasswordFields((current) => !current);
@@ -308,7 +308,7 @@ export const SettingsPage = () => {
               }}
             >
               <input
-                className="rounded-2xl border border-slate-200 px-4 py-3"
+                className="rounded-2xl border border-white/10 px-4 py-3"
                 onChange={(event) =>
                   setPasswordFields((current) => ({ ...current, currentPassword: event.target.value }))
                 }
@@ -317,7 +317,7 @@ export const SettingsPage = () => {
                 value={passwordFields.currentPassword}
               />
               <input
-                className="rounded-2xl border border-slate-200 px-4 py-3"
+                className="rounded-2xl border border-white/10 px-4 py-3"
                 onChange={(event) =>
                   setPasswordFields((current) => ({ ...current, newPassword: event.target.value }))
                 }
@@ -326,7 +326,7 @@ export const SettingsPage = () => {
                 value={passwordFields.newPassword}
               />
               <input
-                className="rounded-2xl border border-slate-200 px-4 py-3 md:col-span-2"
+                className="rounded-2xl border border-white/10 px-4 py-3 md:col-span-2"
                 onChange={(event) =>
                   setPasswordFields((current) => ({ ...current, confirmPassword: event.target.value }))
                 }
@@ -336,14 +336,14 @@ export const SettingsPage = () => {
               />
               <div className="flex flex-wrap gap-3 md:col-span-2">
                 <button
-                  className="rounded-full border border-slate-200 px-5 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                  className="rounded-full border border-white/10 px-5 py-3 text-sm font-medium text-[#F5F5F5]/85 transition hover:bg-white/12/5"
                   onClick={() => setShowPasswordValues((current) => !current)}
                   type="button"
                 >
                   {showPasswordValues ? 'Hide passwords' : 'Show passwords'}
                 </button>
                 <button
-                  className="rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white disabled:opacity-60"
+                  className="rounded-full bg-[#FF5A2F] px-5 py-3 text-sm font-medium text-[#0D0D0D] disabled:opacity-60"
                   disabled={
                     passwordMutation.isPending ||
                     !passwordFields.currentPassword ||
@@ -358,7 +358,7 @@ export const SettingsPage = () => {
             </form>
           ) : null}
           {passwordMessage ? (
-            <p className={`text-sm ${passwordMessage === 'Password changed.' ? 'text-emerald-700' : 'text-rose-600'}`}>
+            <p className={`text-sm ${passwordMessage === 'Password changed.' ? 'text-[#FF5A2F]' : 'text-[#FF5A2F]'}`}>
               {passwordMessage}
             </p>
           ) : null}
@@ -366,15 +366,12 @@ export const SettingsPage = () => {
       </PageCard>
 
       {user.role !== 'CHILD' ? (
-        <PageCard
-          title="Delete account"
-          subtitle="Deleting your account permanently removes your profile, posts, messages, conversations, connections, and notifications."
-        >
+        <PageCard title="Delete account">
           <div className="space-y-4">
             {user.hasChildren ? (
               <div className="flex flex-wrap gap-3">
                 <button
-                  className="rounded-full border border-rose-200 px-5 py-3 text-sm font-medium text-rose-700 disabled:opacity-60"
+                  className="rounded-full border border-[#FF5A2F]/35 px-5 py-3 text-sm font-medium text-[#FF5A2F] disabled:opacity-60"
                   disabled={deleteAccountMutation.isPending}
                   onClick={() => handleDeleteAccount('DELETE_CHILDREN')}
                   type="button"
@@ -382,7 +379,7 @@ export const SettingsPage = () => {
                   {deleteAccountMutation.isPending ? 'Deleting...' : 'Delete children and account'}
                 </button>
                 <button
-                  className="rounded-full border border-amber-200 px-5 py-3 text-sm font-medium text-amber-700 disabled:opacity-60"
+                  className="rounded-full border border-[#FF5A2F]/35 px-5 py-3 text-sm font-medium text-[#FF5A2F] disabled:opacity-60"
                   disabled={deleteAccountMutation.isPending}
                   onClick={() => handleDeleteAccount('RELEASE_CHILDREN')}
                   type="button"
@@ -392,7 +389,7 @@ export const SettingsPage = () => {
               </div>
             ) : (
               <button
-                className="rounded-full border border-rose-200 px-5 py-3 text-sm font-medium text-rose-700 disabled:opacity-60"
+                className="rounded-full border border-[#FF5A2F]/35 px-5 py-3 text-sm font-medium text-[#FF5A2F] disabled:opacity-60"
                 disabled={deleteAccountMutation.isPending}
                 onClick={() => handleDeleteAccount()}
                 type="button"
@@ -400,13 +397,21 @@ export const SettingsPage = () => {
                 {deleteAccountMutation.isPending ? 'Deleting...' : 'Delete account'}
               </button>
             )}
-            {deleteMessage ? <p className="text-sm text-rose-600">{deleteMessage}</p> : null}
+            {deleteMessage ? <p className="text-sm text-[#FF5A2F]">{deleteMessage}</p> : null}
           </div>
         </PageCard>
       ) : null}
     </div>
   );
 };
+
+
+
+
+
+
+
+
 
 
 

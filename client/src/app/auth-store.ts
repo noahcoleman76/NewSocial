@@ -1,4 +1,4 @@
-import { create } from 'zustand';
+﻿import { create } from 'zustand';
 import { AxiosError } from 'axios';
 import { api, clearAccessToken, setAccessToken } from '@/lib/api';
 import { disconnectMessageSocket } from '@/features/messages/socket';
@@ -26,7 +26,7 @@ type AuthState = {
   applySession: (payload: AuthResponse) => void;
   setCurrentUser: (user: CurrentUser) => void;
   initialize: () => Promise<void>;
-  login: (input: { email: string; password: string }) => Promise<void>;
+  login: (input: { identifier: string; password: string }) => Promise<void>;
   register: (input: {
     email: string;
     username: string;
@@ -194,3 +194,4 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   clearError: () => set({ errorMessage: null }),
 }));
+

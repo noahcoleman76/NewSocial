@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
@@ -10,7 +10,7 @@ type SearchUsersResponse = {
 };
 
 const inputClass =
-  'w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-400';
+  'w-full rounded-2xl border border-white/10 px-4 py-3 outline-none transition focus:border-[#FF5A2F]';
 
 const relationshipLabel = (relationship: SearchUser['relationship']) => {
   switch (relationship) {
@@ -92,45 +92,45 @@ export const SearchPage = () => {
     sendRequestMutation.isPending || acceptRequestMutation.isPending || cancelRequestMutation.isPending;
 
   return (
-    <PageCard title="Search" subtitle="Basic profile discovery only. Posts stay hidden until an active mutual connection exists.">
+    <PageCard title="Search">
       <input
         className={inputClass}
         onChange={(event) => setQuery(event.target.value)}
-        placeholder="Search username or display name"
+        placeholder="Search people"
         value={query}
       />
       <div className="mt-4 space-y-3">
         {!debouncedQuery ? (
-          <p className="text-sm text-slate-500">Search by username or display name to find accounts.</p>
+          <p className="text-sm text-[#F5F5F5]/60">Search by name or username.</p>
         ) : null}
-        {searchQuery.isLoading ? <p className="text-sm text-slate-500">Searching...</p> : null}
-        {searchQuery.isError ? <p className="text-sm text-rose-600">Could not search users right now.</p> : null}
+        {searchQuery.isLoading ? <p className="text-sm text-[#F5F5F5]/60">Searching...</p> : null}
+        {searchQuery.isError ? <p className="text-sm text-[#FF5A2F]">Could not search.</p> : null}
         {searchQuery.data?.length === 0 ? (
-          <div className="rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 p-5 text-sm text-slate-600">
-            No matching accounts found.
+          <div className="rounded-[1.5rem] border border-dashed border-white/15 bg-white/7 p-5 text-sm text-[#F5F5F5]/75">
+            No matches.
           </div>
         ) : null}
         {searchQuery.data?.map((user) => (
-          <div key={user.id} className="flex flex-wrap items-center justify-between gap-4 rounded-[1.5rem] border border-slate-200 p-4">
+          <div key={user.id} className="flex flex-wrap items-center justify-between gap-4 rounded-[1.5rem] border border-white/10 p-4">
             <div>
-              <Link className="font-medium text-slate-900 hover:underline" to={`/profile/${user.username}`}>
+              <Link className="font-medium text-[#F5F5F5] hover:underline" to={`/profile/${user.username}`}>
                 {user.displayName}
               </Link>
-              <p className="text-sm text-slate-500">@{user.username}</p>
+              <p className="text-sm text-[#F5F5F5]/60">@{user.username}</p>
               {user.isFamilyLinked ? (
-                <p className="mt-2 text-xs uppercase tracking-[0.16em] text-amber-700">
+                <p className="mt-2 text-xs uppercase tracking-[0.16em] text-[#FF5A2F]">
                   Family-linked account
                 </p>
               ) : null}
               {user.relationship === 'PENDING_MANAGER_APPROVAL' ? (
-                <p className="mt-2 text-sm text-slate-500">
-                  This connection is waiting for family manager approval before posts and profile access unlock.
+                <p className="mt-2 text-sm text-[#F5F5F5]/60">
+                  Waiting for family approval.
                 </p>
               ) : null}
             </div>
             {user.relationship === 'INCOMING_REQUEST' && user.requestId ? (
               <button
-                className="rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 disabled:opacity-60"
+                className="rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-[#F5F5F5]/85 disabled:opacity-60"
                 disabled={busy}
                 onClick={() => acceptRequestMutation.mutate(user.requestId!)}
                 type="button"
@@ -140,7 +140,7 @@ export const SearchPage = () => {
             ) : null}
             {user.relationship === 'OUTGOING_REQUEST' && user.requestId ? (
               <button
-                className="rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 disabled:opacity-60"
+                className="rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-[#F5F5F5]/85 disabled:opacity-60"
                 disabled={busy}
                 onClick={() => cancelRequestMutation.mutate(user.requestId!)}
                 type="button"
@@ -150,7 +150,7 @@ export const SearchPage = () => {
             ) : null}
             {user.relationship === 'NONE' ? (
               <button
-                className="rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 disabled:opacity-60"
+                className="rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-[#F5F5F5]/85 disabled:opacity-60"
                 disabled={busy}
                 onClick={() => sendRequestMutation.mutate(user.id)}
                 type="button"
@@ -159,12 +159,12 @@ export const SearchPage = () => {
               </button>
             ) : null}
             {user.relationship === 'CONNECTED' ? (
-              <span className="rounded-full bg-slate-900 px-3 py-2 text-xs uppercase tracking-[0.16em] text-white">
+              <span className="rounded-full bg-[#FF5A2F] px-3 py-2 text-xs uppercase tracking-[0.16em] text-[#0D0D0D]">
                 {relationshipLabel(user.relationship)}
               </span>
             ) : null}
             {user.relationship === 'PENDING_MANAGER_APPROVAL' ? (
-              <span className="rounded-full bg-amber-50 px-3 py-2 text-xs uppercase tracking-[0.16em] text-amber-700">
+              <span className="rounded-full bg-[#FF5A2F]/10 px-3 py-2 text-xs uppercase tracking-[0.16em] text-[#FF5A2F]">
                 {relationshipLabel(user.relationship)}
               </span>
             ) : null}
@@ -174,3 +174,10 @@ export const SearchPage = () => {
     </PageCard>
   );
 };
+
+
+
+
+
+
+

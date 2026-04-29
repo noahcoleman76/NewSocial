@@ -1,4 +1,4 @@
-import { Navigate, Outlet } from 'react-router-dom';
+﻿import { Navigate, Outlet } from 'react-router-dom';
 import { useAuthStore } from '@/app/auth-store';
 import { useAuthBootstrap } from '@/app/use-auth-bootstrap';
 import type { CurrentUser } from '@/types/app';
@@ -16,7 +16,7 @@ export const ProtectedRoute = ({
   const user = useAuthStore((state) => state.currentUser);
 
   if (status === 'idle' || status === 'loading') {
-    return <div className="flex min-h-screen items-center justify-center text-sm text-slate-500">Checking session...</div>;
+    return <div className="flex min-h-screen items-center justify-center text-sm text-[#F5F5F5]/60">Checking session...</div>;
   }
 
   if (!user) {
@@ -33,3 +33,6 @@ export const ProtectedRoute = ({
 
   return <Outlet />;
 };
+
+
+

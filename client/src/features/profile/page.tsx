@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
@@ -42,7 +42,7 @@ type ProfileResponse = {
 };
 
 const tabClass = (active: boolean) =>
-  `rounded-full px-4 py-2 text-sm transition ${active ? 'bg-slate-900 text-white' : 'border border-slate-200 text-slate-600 hover:bg-slate-50'}`;
+  `rounded-full px-4 py-2 text-sm transition ${active ? 'bg-[#FF5A2F] text-[#0D0D0D]' : 'border border-white/10 text-[#F5F5F5]/75 hover:bg-white/12/5'}`;
 
 export const ProfilePage = () => {
   const navigate = useNavigate();
@@ -120,7 +120,7 @@ export const ProfilePage = () => {
       setPostReportStatus('Post reported for admin review.');
     },
     onError: () => {
-      setPostReportStatus('Could not report this post right now.');
+      setPostReportStatus('Could not report post.');
     },
   });
 
@@ -175,7 +175,7 @@ export const ProfilePage = () => {
       setReportStatus('Account reported.');
     },
     onError: () => {
-      setReportStatus('Could not report this account right now.');
+      setReportStatus('Could not report account.');
     },
   });
 
@@ -196,7 +196,7 @@ export const ProfilePage = () => {
       ]);
     },
     onError: () => {
-      setAdminActionStatus('Could not update this account right now.');
+      setAdminActionStatus('Could not update account.');
     },
   });
   const promoteAdminMutation = useMutation({
@@ -212,7 +212,7 @@ export const ProfilePage = () => {
       ]);
     },
     onError: () => {
-      setAdminActionStatus('Could not promote this account right now.');
+      setAdminActionStatus('Could not promote account.');
     },
   });
   const handleReportAccount = (accountId: string) => {
@@ -235,33 +235,33 @@ export const ProfilePage = () => {
 
   return (
     <div className="space-y-6">
-      <PageCard title="Profile" subtitle="Profiles show basic information first. Post visibility depends on an active connection.">
-        {profileQuery.isLoading ? <p className="text-sm text-slate-500">Loading profile...</p> : null}
-        {profileQuery.isError ? <p className="text-sm text-rose-600">Could not load this profile right now.</p> : null}
+      <PageCard title="Profile">
+        {profileQuery.isLoading ? <p className="text-sm text-[#F5F5F5]/60">Loading profile...</p> : null}
+        {profileQuery.isError ? <p className="text-sm text-[#FF5A2F]">Could not load profile.</p> : null}
         {profile ? (
           <div className="space-y-5">
             <div className="flex items-start gap-4">
               {profile.profileImageUrl ? (
                 <img alt="" className="h-20 w-20 rounded-full object-cover" src={profile.profileImageUrl} />
               ) : (
-                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-slate-100 text-xl font-semibold text-slate-500">
+                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white/12 text-xl font-semibold text-[#F5F5F5]/60">
                   {profile.displayName.charAt(0).toUpperCase()}
                 </div>
               )}
               <div className="space-y-2">
                 <div>
-                  <h2 className="text-2xl font-semibold text-slate-900">{profile.displayName}</h2>
-                  <p className="text-sm text-slate-500">@{profile.username}</p>
+                  <h2 className="text-2xl font-semibold text-[#F5F5F5]">{profile.displayName}</h2>
+                  <p className="text-sm text-[#F5F5F5]/60">@{profile.username}</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {profile.isFamilyLinked ? (
-                    <p className="text-xs uppercase tracking-[0.16em] text-amber-700">Family-linked account</p>
+                    <p className="text-xs uppercase tracking-[0.16em] text-[#FF5A2F]">Family-linked account</p>
                   ) : null}
                   {profile.accountStatus === 'DISABLED' ? (
-                    <p className="text-xs uppercase tracking-[0.16em] text-rose-700">Disabled account</p>
+                    <p className="text-xs uppercase tracking-[0.16em] text-[#FF5A2F]">Disabled account</p>
                   ) : null}
                 </div>
-                <p className="max-w-2xl text-sm leading-7 text-slate-600">{profile.bio || 'No bio yet.'}</p>
+                <p className="max-w-2xl text-sm leading-7 text-[#F5F5F5]/75">{profile.bio || 'No bio.'}</p>
               </div>
             </div>
             {!profile.isSelf ? (
@@ -269,7 +269,7 @@ export const ProfilePage = () => {
                 <div className="flex flex-wrap gap-3">
                 {profile.relationship === 'NONE' && profile.accountStatus === 'ACTIVE' ? (
                   <button
-                    className="rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 disabled:opacity-60"
+                    className="rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-[#F5F5F5]/85 disabled:opacity-60"
                     disabled={sendRequestMutation.isPending}
                     onClick={() => sendRequestMutation.mutate(profile.id)}
                     type="button"
@@ -280,7 +280,7 @@ export const ProfilePage = () => {
                 {profile.relationship === 'CONNECTED' && !profile.isFamilyConnection && profile.accountStatus === 'ACTIVE' ? (
                   <>
                     <button
-                      className="rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 disabled:opacity-60"
+                      className="rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-[#F5F5F5]/85 disabled:opacity-60"
                       disabled={messageMutation.isPending}
                       onClick={() => messageMutation.mutate(profile.id)}
                       type="button"
@@ -288,10 +288,10 @@ export const ProfilePage = () => {
                       {messageMutation.isPending ? 'Opening...' : 'Message'}
                     </button>
                     <button
-                      className="rounded-full border border-rose-200 px-4 py-2 text-sm font-medium text-rose-700 disabled:opacity-60"
+                      className="rounded-full border border-[#FF5A2F]/35 px-4 py-2 text-sm font-medium text-[#FF5A2F] disabled:opacity-60"
                       disabled={disconnectMutation.isPending}
                       onClick={() => {
-                        if (window.confirm(`Are you sure you want to disconnect from ${profile.displayName}?`)) {
+                        if (window.confirm(`Disconnect from ${profile.displayName}?`)) {
                           disconnectMutation.mutate(profile.id);
                         }
                       }}
@@ -304,36 +304,36 @@ export const ProfilePage = () => {
                 {profile.relationship === 'CONNECTED' && profile.isFamilyConnection && profile.accountStatus === 'ACTIVE' ? (
                   <>
                     <button
-                      className="rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 disabled:opacity-60"
+                      className="rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-[#F5F5F5]/85 disabled:opacity-60"
                       disabled={messageMutation.isPending}
                       onClick={() => messageMutation.mutate(profile.id)}
                       type="button"
                     >
                       {messageMutation.isPending ? 'Opening...' : 'Message'}
                     </button>
-                    <span className="rounded-full bg-slate-100 px-3 py-2 text-xs uppercase tracking-[0.16em] text-slate-600">
+                    <span className="rounded-full bg-white/12 px-3 py-2 text-xs uppercase tracking-[0.16em] text-[#F5F5F5]/75">
                       Family connection
                     </span>
                   </>
                 ) : null}
                 {profile.relationship === 'INCOMING_REQUEST' ? (
-                  <span className="rounded-full bg-slate-100 px-3 py-2 text-xs uppercase tracking-[0.16em] text-slate-600">
+                  <span className="rounded-full bg-white/12 px-3 py-2 text-xs uppercase tracking-[0.16em] text-[#F5F5F5]/75">
                     Accept from Connections
                   </span>
                 ) : null}
                 {profile.relationship === 'OUTGOING_REQUEST' ? (
-                  <span className="rounded-full bg-slate-900 px-3 py-2 text-xs uppercase tracking-[0.16em] text-white">
+                  <span className="rounded-full bg-[#FF5A2F] px-3 py-2 text-xs uppercase tracking-[0.16em] text-[#0D0D0D]">
                     Request pending
                   </span>
                 ) : null}
                 {profile.relationship === 'PENDING_MANAGER_APPROVAL' ? (
-                  <span className="rounded-full bg-amber-50 px-3 py-2 text-xs uppercase tracking-[0.16em] text-amber-700">
+                  <span className="rounded-full bg-[#FF5A2F]/10 px-3 py-2 text-xs uppercase tracking-[0.16em] text-[#FF5A2F]">
                     Waiting for family approval
                   </span>
                 ) : null}
                 {profile.canPromoteToAdmin ? (
                   <button
-                    className="rounded-full border border-slate-900 bg-slate-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
+                    className="rounded-full border border-slate-900 bg-[#FF5A2F] px-4 py-2 text-sm font-medium text-[#0D0D0D] disabled:opacity-60"
                     disabled={promoteAdminMutation.isPending}
                     onClick={() => {
                       if (window.confirm(`Make ${profile.displayName} an admin?`)) {
@@ -348,7 +348,7 @@ export const ProfilePage = () => {
                 ) : null}
                 {profile.canDisableAccount ? (
                   <button
-                    className="rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-medium text-rose-700 disabled:opacity-60"
+                    className="rounded-full border border-[#FF5A2F]/35 bg-[#FF5A2F]/10 px-4 py-2 text-sm font-medium text-[#FF5A2F] disabled:opacity-60"
                     disabled={moderateAccountMutation.isPending}
                     onClick={() => {
                       if (window.confirm(`Disable ${profile.displayName}'s account? They will not be able to log in until an admin re-enables it.`)) {
@@ -363,7 +363,7 @@ export const ProfilePage = () => {
                 ) : null}
                 {profile.canEnableAccount ? (
                   <button
-                    className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700 disabled:opacity-60"
+                    className="rounded-full border border-[#FF5A2F]/35 bg-[#FF5A2F]/10 px-4 py-2 text-sm font-medium text-[#FF5A2F] disabled:opacity-60"
                     disabled={moderateAccountMutation.isPending}
                     onClick={() => {
                       if (window.confirm(`Re-enable ${profile.displayName}'s account?`)) {
@@ -377,7 +377,7 @@ export const ProfilePage = () => {
                   </button>
                 ) : null}
                 <button
-                  className="rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 disabled:opacity-60"
+                  className="rounded-full border border-white/10 px-4 py-2 text-sm font-medium text-[#F5F5F5]/75 disabled:opacity-60"
                   disabled={reportAccountMutation.isPending}
                   onClick={() => handleReportAccount(profile.id)}
                   type="button"
@@ -386,12 +386,12 @@ export const ProfilePage = () => {
                 </button>
               </div>
               {adminActionStatus ? (
-                <p className={`text-sm ${['Account promoted to admin.', 'Account disabled.', 'Account enabled.'].includes(adminActionStatus) ? 'text-emerald-700' : 'text-rose-600'}`}>
+                <p className={`text-sm ${['Account promoted to admin.', 'Account disabled.', 'Account enabled.'].includes(adminActionStatus) ? 'text-[#FF5A2F]' : 'text-[#FF5A2F]'}`}>
                   {adminActionStatus}
                 </p>
               ) : null}
               {reportStatus ? (
-                <p className={`text-sm ${reportStatus === 'Account reported.' ? 'text-emerald-700' : 'text-rose-600'}`}>
+                <p className={`text-sm ${reportStatus === 'Account reported.' ? 'text-[#FF5A2F]' : 'text-[#FF5A2F]'}`}>
                   {reportStatus}
                 </p>
               ) : null}
@@ -401,9 +401,9 @@ export const ProfilePage = () => {
         ) : null}
       </PageCard>
       {profile && profile.canSeePosts ? (
-        <PageCard title="Posts" subtitle="Profiles keep older posts visible even after they leave the main feed.">
+        <PageCard title="Posts">
           {postReportStatus ? (
-            <p className={`mb-4 text-sm ${postReportStatus === 'Post reported for admin review.' ? 'text-emerald-700' : 'text-rose-600'}`}>
+            <p className={`mb-4 text-sm ${postReportStatus === 'Post reported for admin review.' ? 'text-[#FF5A2F]' : 'text-[#FF5A2F]'}`}>
               {postReportStatus}
             </p>
           ) : null}
@@ -421,36 +421,36 @@ export const ProfilePage = () => {
           {visiblePosts.length ? (
             <div className="space-y-4">
               {visiblePosts.map((post) => (
-                <article key={post.id} className="rounded-[1.5rem] border border-slate-200 p-5">
-                  <p className="text-xs uppercase tracking-[0.18em] text-slate-400">
+                <article key={post.id} className="rounded-[1.5rem] border border-white/10 p-5">
+                  <p className="text-xs uppercase tracking-[0.18em] text-[#F5F5F5]/45">
                     {new Date(post.createdAt).toLocaleDateString()}
                   </p>
-                  {post.caption ? <p className="mt-3 text-sm leading-7 text-slate-700">{post.caption}</p> : null}
+                  {post.caption ? <p className="mt-3 text-sm leading-7 text-[#F5F5F5]/85">{post.caption}</p> : null}
                   {post.images.length ? (
                     <div className="mt-4 grid gap-3 sm:grid-cols-2">
                       {post.images.map((imageUrl) => (
-                        <img key={imageUrl} alt="" className="rounded-[1.25rem] border border-slate-200 object-cover" src={imageUrl} />
+                        <img key={imageUrl} alt="" className="rounded-[1.25rem] border border-white/10 object-cover" src={imageUrl} />
                       ))}
                     </div>
                   ) : null}
-                  <div className="mt-4 flex flex-wrap gap-3 text-sm text-slate-500">
+                  <div className="mt-4 flex flex-wrap gap-3 text-sm text-[#F5F5F5]/60">
                     <button
-                      className="rounded-full border border-slate-200 px-4 py-2 text-sm text-slate-700 disabled:opacity-60"
+                      className="rounded-full border border-white/10 px-4 py-2 text-sm text-[#F5F5F5]/85 disabled:opacity-60"
                       disabled={likeMutation.isPending}
                       onClick={() => likeMutation.mutate({ postId: post.id, likedByMe: post.likedByMe })}
                       type="button"
                     >
                       {post.likedByMe ? 'Unlike' : 'Like'} · {post.likeCount}
                     </button>
-                    <Link className="rounded-full border border-slate-200 px-4 py-2" to={`/post/${post.id}`}>
+                    <Link className="rounded-full border border-white/10 px-4 py-2" to={`/post/${post.id}`}>
                       {post.commentCount} comments
                     </Link>
                     {post.canDelete ? (
                       <button
-                        className="rounded-full border border-rose-200 px-4 py-2 text-sm text-rose-700 disabled:opacity-60"
+                        className="rounded-full border border-[#FF5A2F]/35 px-4 py-2 text-sm text-[#FF5A2F] disabled:opacity-60"
                         disabled={deletePostMutation.isPending}
                         onClick={() => {
-                          if (window.confirm('Are you sure you want to delete this post?')) {
+                          if (window.confirm('Delete this post?')) {
                             deletePostMutation.mutate(post.id);
                           }
                         }}
@@ -460,7 +460,7 @@ export const ProfilePage = () => {
                       </button>
                     ) : (
                       <button
-                        className="rounded-full border border-slate-200 px-4 py-2 text-sm text-slate-600 disabled:opacity-60"
+                        className="rounded-full border border-white/10 px-4 py-2 text-sm text-[#F5F5F5]/75 disabled:opacity-60"
                         disabled={reportPostMutation.isPending}
                         onClick={() => handleReportPost(post.id)}
                         type="button"
@@ -473,13 +473,20 @@ export const ProfilePage = () => {
               ))}
             </div>
           ) : (
-            <p className="text-sm text-slate-500">No posts to show in this tab yet.</p>
+            <p className="text-sm text-[#F5F5F5]/60">No posts here.</p>
           )}
         </PageCard>
       ) : null}
     </div>
   );
 };
+
+
+
+
+
+
+
 
 
 

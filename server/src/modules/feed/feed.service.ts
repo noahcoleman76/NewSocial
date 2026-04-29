@@ -1,7 +1,7 @@
-import type { FeedAdItem, FeedItem } from '../../../../shared/types/domain';
+﻿import type { FeedAdItem, FeedItem } from '../../../../shared/types/domain';
 import { connectionRepository } from '@/modules/connections/connection.repository';
 import { feedRepository } from './feed.repository';
-import { filterFeedPosts, injectFeedAds } from './feed.rules';
+import { filterFeedPosts } from './feed.rules';
 
 type FeedInput = Parameters<typeof filterFeedPosts>[0];
 
@@ -18,17 +18,15 @@ export const buildUnifiedFeed = ({
   now?: Date;
   viewerId?: string;
 }): FeedItem[] => {
-  const visiblePosts = filterFeedPosts(posts, mutualConnectionIds, now, viewerId);
-  return injectFeedAds(visiblePosts, ads);
+  return filterFeedPosts(posts, mutualConnectionIds, now, viewerId);
 };
 
 export const feedService = {
   getFeed: async (userId: string) => {
-    const [posts, activeConnectionIds, familyConnectionIds, ads] = await Promise.all([
+    const [posts, activeConnectionIds, familyConnectionIds] = await Promise.all([
       feedRepository.listFeedPosts(userId),
       connectionRepository.listActiveConnectionIds(userId),
       connectionRepository.listFamilyConnectionIds(userId),
-      feedRepository.listActiveAds(),
     ]);
 
     const visibleConnectionIds = [...new Set([...activeConnectionIds, ...familyConnectionIds])];
@@ -48,16 +46,9 @@ export const feedService = {
       })),
       mutualConnectionIds: visibleConnectionIds,
       viewerId: userId,
-      ads: ads.map<FeedAdItem>((ad) => ({
-        type: 'ad',
-        id: ad.id,
-        title: ad.title,
-        body: ad.body,
-        imageUrl: ad.imageUrl,
-        ctaLabel: ad.ctaLabel,
-        ctaUrl: ad.ctaUrl,
-      })),
+      ads: [],
     });
   },
 };
+
 

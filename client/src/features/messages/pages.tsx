@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
@@ -120,45 +120,44 @@ export const MessagesPage = () => {
   });
 
   return (
-    <PageCard title="Messages" subtitle="Direct messages only. Unread state is shown at the conversation level.">
-      <div className="mb-5 flex items-center justify-between gap-4">
-        <p className="text-sm text-slate-500">All message threads appear here. Unread threads stay marked until you open them.</p>
+    <PageCard title="Messages">
+      <div className="mb-5 flex items-center justify-end gap-4">
         <Link
-          className="rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
+          className="rounded-full bg-[#FF5A2F] px-4 py-2 text-sm font-medium text-[#0D0D0D] transition hover:bg-[#ff704d]"
           to="/messages/new"
         >
           New message
         </Link>
       </div>
-      {conversationsQuery.isLoading ? <p className="text-sm text-slate-500">Loading conversations...</p> : null}
-      {conversationsQuery.isError ? <p className="text-sm text-rose-600">Could not load your conversations right now.</p> : null}
+      {conversationsQuery.isLoading ? <p className="text-sm text-[#F5F5F5]/60">Loading conversations...</p> : null}
+      {conversationsQuery.isError ? <p className="text-sm text-[#FF5A2F]">Could not load conversations.</p> : null}
       {conversationsQuery.data?.length ? (
         <div className="space-y-3">
           {conversationsQuery.data.map((conversation) => (
             <Link
               key={conversation.id}
-              className="block rounded-[1.5rem] border border-slate-200 p-4 transition hover:bg-slate-50"
+              className="block rounded-[1.5rem] border border-white/10 p-4 transition hover:bg-white/12/5"
               to={`/messages/${conversation.id}`}
             >
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className="font-medium">{summaryLabel(conversation.participant)}</p>
-                  <p className="mt-1 text-xs uppercase tracking-[0.16em] text-slate-400">
+                  <p className="mt-1 text-xs uppercase tracking-[0.16em] text-[#F5F5F5]/45">
                     {new Date(conversation.updatedAt).toLocaleString()}
                   </p>
                 </div>
                 {conversation.unread ? (
-                  <span className="rounded-full bg-slate-900 px-2 py-1 text-xs text-white">Unread</span>
+                  <span className="rounded-full bg-[#FF5A2F] px-2 py-1 text-xs text-[#0D0D0D]">Unread</span>
                 ) : null}
               </div>
-              <p className="mt-3 text-sm text-slate-500">{conversation.preview}</p>
+              <p className="mt-3 text-sm text-[#F5F5F5]/60">{conversation.preview}</p>
             </Link>
           ))}
         </div>
       ) : null}
       {conversationsQuery.data && conversationsQuery.data.length === 0 ? (
-        <div className="rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 p-5 text-sm leading-7 text-slate-600">
-          No conversations yet. Start a new message with someone you are connected to.
+        <div className="rounded-[1.5rem] border border-dashed border-white/15 bg-white/7 p-5 text-sm leading-7 text-[#F5F5F5]/75">
+          No conversations yet.
         </div>
       ) : null}
     </PageCard>
@@ -203,33 +202,33 @@ export const NewMessagePage = () => {
   }, [connectionsQuery.data, query]);
 
   return (
-    <PageCard title="New message" subtitle="Search connected people and open a direct conversation.">
+    <PageCard title="New message">
       <div className="space-y-5">
         <input
-          className="w-full rounded-[1.5rem] border border-slate-200 px-4 py-3"
+          className="w-full rounded-[1.5rem] border border-white/10 px-4 py-3"
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Search connected people"
           value={query}
         />
 
-        {connectionsQuery.isLoading ? <p className="text-sm text-slate-500">Loading connections...</p> : null}
-        {connectionsQuery.isError ? <p className="text-sm text-rose-600">Could not load your connections right now.</p> : null}
+        {connectionsQuery.isLoading ? <p className="text-sm text-[#F5F5F5]/60">Loading connections...</p> : null}
+        {connectionsQuery.isError ? <p className="text-sm text-[#FF5A2F]">Could not load connections.</p> : null}
 
         {filteredConnections.length ? (
           <div className="space-y-3">
             {filteredConnections.map((connection) => (
               <button
                 key={connection.id}
-                className="flex w-full items-center justify-between rounded-[1.5rem] border border-slate-200 p-4 text-left transition hover:bg-slate-50 disabled:opacity-60"
+                className="flex w-full items-center justify-between rounded-[1.5rem] border border-white/10 p-4 text-left transition hover:bg-white/12/5 disabled:opacity-60"
                 disabled={createConversationMutation.isPending}
                 onClick={() => createConversationMutation.mutate(connection.user.id)}
                 type="button"
               >
                 <div>
-                  <p className="font-medium text-slate-900">{connection.user.displayName}</p>
-                  <p className="mt-1 text-sm text-slate-500">@{connection.user.username}</p>
+                  <p className="font-medium text-[#F5F5F5]">{connection.user.displayName}</p>
+                  <p className="mt-1 text-sm text-[#F5F5F5]/60">@{connection.user.username}</p>
                 </div>
-                <span className="rounded-full border border-slate-200 px-3 py-2 text-xs uppercase tracking-[0.16em] text-slate-500">
+                <span className="rounded-full border border-white/10 px-3 py-2 text-xs uppercase tracking-[0.16em] text-[#F5F5F5]/60">
                   Message
                 </span>
               </button>
@@ -238,8 +237,8 @@ export const NewMessagePage = () => {
         ) : null}
 
         {connectionsQuery.data && filteredConnections.length === 0 ? (
-          <div className="rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 p-5 text-sm leading-7 text-slate-600">
-            No connected people match that search yet.
+          <div className="rounded-[1.5rem] border border-dashed border-white/15 bg-white/7 p-5 text-sm leading-7 text-[#F5F5F5]/75">
+            No matches.
           </div>
         ) : null}
       </div>
@@ -303,7 +302,7 @@ export const ConversationPage = () => {
       ]);
     },
     onError: () => {
-      setSubmitError('Could not send your message right now.');
+      setSubmitError('Could not send message.');
     },
   });
 
@@ -311,18 +310,18 @@ export const ConversationPage = () => {
 
   return (
     <PageCard title="Conversation" subtitle={participant ? `Messaging ${participant.displayName}` : 'Direct message'}>
-      {conversationQuery.isLoading ? <p className="text-sm text-slate-500">Loading conversation...</p> : null}
-      {conversationQuery.isError ? <p className="text-sm text-rose-600">Could not load this conversation right now.</p> : null}
+      {conversationQuery.isLoading ? <p className="text-sm text-[#F5F5F5]/60">Loading conversation...</p> : null}
+      {conversationQuery.isError ? <p className="text-sm text-[#FF5A2F]">Could not load conversation.</p> : null}
       {conversationQuery.data ? (
         <>
           <div className="mb-4 flex items-center justify-between gap-4">
             <div>
-              <p className="font-medium text-slate-900">{participant ? participant.displayName : 'Deleted User'}</p>
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="font-medium text-[#F5F5F5]">{participant ? participant.displayName : 'Deleted User'}</p>
+              <p className="mt-1 text-sm text-[#F5F5F5]/60">
                 {participant ? `@${participant.username}` : 'Account removed'}
               </p>
             </div>
-            <Link className="rounded-full border border-slate-200 px-4 py-2 text-sm text-slate-700" to="/messages">
+            <Link className="rounded-full border border-white/10 px-4 py-2 text-sm text-[#F5F5F5]/85" to="/messages">
               Back to inbox
             </Link>
           </div>
@@ -332,12 +331,12 @@ export const ConversationPage = () => {
                 <div
                   key={message.id}
                   className={`rounded-[1.5rem] border p-4 ${
-                    message.isMine ? 'border-slate-200 bg-slate-50' : 'border-slate-200 bg-white'
+                    message.isMine ? 'border-white/10 bg-white/7' : 'border-white/10 bg-white'
                   }`}
                 >
                   <div className="flex items-center justify-between gap-4">
-                    <p className="text-sm text-slate-500">{message.author.name}</p>
-                    <p className="text-xs uppercase tracking-[0.16em] text-slate-400">
+                    <p className="text-sm text-[#F5F5F5]/60">{message.author.name}</p>
+                    <p className="text-xs uppercase tracking-[0.16em] text-[#F5F5F5]/45">
                       {new Date(message.createdAt).toLocaleString()}
                     </p>
                   </div>
@@ -345,15 +344,15 @@ export const ConversationPage = () => {
                   {message.imageUrls.length ? (
                     <div className="mt-3 grid gap-3 sm:grid-cols-2">
                       {message.imageUrls.map((imageUrl) => (
-                        <img key={imageUrl} alt="" className="rounded-[1.25rem] border border-slate-200 object-cover" src={imageUrl} />
+                        <img key={imageUrl} alt="" className="rounded-[1.25rem] border border-white/10 object-cover" src={imageUrl} />
                       ))}
                     </div>
                   ) : null}
                 </div>
               ))
             ) : (
-              <div className="rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 p-5 text-sm leading-7 text-slate-600">
-                No messages yet. Send the first one.
+              <div className="rounded-[1.5rem] border border-dashed border-white/15 bg-white/7 p-5 text-sm leading-7 text-[#F5F5F5]/75">
+                No messages yet.
               </div>
             )}
           </div>
@@ -366,13 +365,13 @@ export const ConversationPage = () => {
             }}
           >
             <textarea
-              className="min-h-28 w-full rounded-[1.5rem] border border-slate-200 px-4 py-3"
+              className="min-h-28 w-full rounded-[1.5rem] border border-white/10 px-4 py-3"
               maxLength={1000}
               onChange={(event) => setBody(event.target.value)}
               placeholder="Write a message"
               value={body}
             />
-            <label className="block cursor-pointer rounded-full border border-slate-200 px-4 py-3 text-center text-sm font-medium text-slate-700 transition hover:bg-slate-50">
+            <label className="block cursor-pointer rounded-full border border-white/10 px-4 py-3 text-center text-sm font-medium text-[#F5F5F5]/85 transition hover:bg-white/12/5">
               Choose up to 3 images
               <input
                 accept="image/png,image/jpeg,image/webp"
@@ -383,13 +382,13 @@ export const ConversationPage = () => {
               />
             </label>
             {files.length ? (
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-[#F5F5F5]/60">
                 {files.length} image{files.length === 1 ? '' : 's'} ready to send
               </p>
             ) : null}
-            {submitError ? <p className="text-sm text-rose-600">{submitError}</p> : null}
+            {submitError ? <p className="text-sm text-[#FF5A2F]">{submitError}</p> : null}
             <button
-              className="rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white disabled:opacity-60"
+              className="rounded-full bg-[#FF5A2F] px-5 py-3 text-sm font-medium text-[#0D0D0D] disabled:opacity-60"
               disabled={sendMutation.isPending || (!body.trim() && files.length === 0)}
               type="submit"
             >
@@ -401,6 +400,14 @@ export const ConversationPage = () => {
     </PageCard>
   );
 };
+
+
+
+
+
+
+
+
 
 
 

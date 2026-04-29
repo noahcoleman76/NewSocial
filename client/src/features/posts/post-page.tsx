@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
@@ -122,10 +122,10 @@ export const PostPage = () => {
       });
     },
     onSuccess: () => {
-      setReportStatus('Report submitted for admin review.');
+      setReportStatus('Report submitted.');
     },
     onError: () => {
-      setReportStatus('Could not submit this report right now.');
+      setReportStatus('Could not submit report.');
     },
   });
 
@@ -157,55 +157,55 @@ export const PostPage = () => {
   return (
     <div className="space-y-4">
       <button
-        className="rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+        className="rounded-full border border-white/10 px-4 py-2 text-sm font-medium text-[#F5F5F5]/85 hover:bg-white/12/5"
         onClick={handleBack}
         type="button"
       >
         Back to feed
       </button>
-      <PageCard title="Post" subtitle="Comments are oldest-first. You can delete your own posts and comments.">
-      {postQuery.isLoading ? <p className="text-sm text-slate-500">Loading post...</p> : null}
-      {postQuery.isError ? <p className="text-sm text-rose-600">Could not load this post right now.</p> : null}
+      <PageCard title="Post">
+      {postQuery.isLoading ? <p className="text-sm text-[#F5F5F5]/60">Loading post...</p> : null}
+      {postQuery.isError ? <p className="text-sm text-[#FF5A2F]">Could not load post.</p> : null}
       {post ? (
         <>
-          <article className="rounded-[1.5rem] border border-slate-200 p-5">
+          <article className="rounded-[1.5rem] border border-white/10 p-5">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <Link className="font-medium text-slate-900 hover:underline" to={`/profile/${post.author.username}`}>
+                <Link className="font-medium text-[#F5F5F5] hover:underline" to={`/profile/${post.author.username}`}>
                   {post.author.displayName}
                 </Link>
-                <p className="text-sm text-slate-500">@{post.author.username}</p>
+                <p className="text-sm text-[#F5F5F5]/60">@{post.author.username}</p>
               </div>
-              <p className="text-xs uppercase tracking-[0.18em] text-slate-400">
+              <p className="text-xs uppercase tracking-[0.18em] text-[#F5F5F5]/45">
                 {new Date(post.createdAt).toLocaleDateString()}
               </p>
             </div>
-            {post.caption ? <p className="mt-3 text-sm leading-7 text-slate-700">{post.caption}</p> : null}
+            {post.caption ? <p className="mt-3 text-sm leading-7 text-[#F5F5F5]/85">{post.caption}</p> : null}
             {post.images.length ? (
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 {post.images.map((imageUrl) => (
-                  <img key={imageUrl} alt="" className="rounded-[1.25rem] border border-slate-200 object-cover" src={imageUrl} />
+                  <img key={imageUrl} alt="" className="rounded-[1.25rem] border border-white/10 object-cover" src={imageUrl} />
                 ))}
               </div>
             ) : null}
             <div className="mt-4 flex flex-wrap gap-3">
               <button
-                className="rounded-full border border-slate-200 px-4 py-2 text-sm text-slate-700 disabled:opacity-60"
+                className="rounded-full border border-white/10 px-4 py-2 text-sm text-[#F5F5F5]/85 disabled:opacity-60"
                 disabled={likeMutation.isPending}
                 onClick={() => likeMutation.mutate(post.likedByMe)}
                 type="button"
               >
                 {post.likedByMe ? 'Unlike' : 'Like'} · {post.likeCount}
               </button>
-              <span className="rounded-full border border-slate-200 px-4 py-2 text-sm text-slate-500">
+              <span className="rounded-full border border-white/10 px-4 py-2 text-sm text-[#F5F5F5]/60">
                 {post.commentCount} comments
               </span>
               {post.canDelete ? (
                 <button
-                  className="rounded-full border border-rose-200 px-4 py-2 text-sm text-rose-700 disabled:opacity-60"
+                  className="rounded-full border border-[#FF5A2F]/35 px-4 py-2 text-sm text-[#FF5A2F] disabled:opacity-60"
                   disabled={deletePostMutation.isPending}
                   onClick={() => {
-                    if (window.confirm('Are you sure you want to delete this post?')) {
+                    if (window.confirm('Delete this post?')) {
                       deletePostMutation.mutate();
                     }
                   }}
@@ -216,7 +216,7 @@ export const PostPage = () => {
               ) : null}
               {!post.canDelete ? (
                 <button
-                  className="rounded-full border border-slate-200 px-4 py-2 text-sm text-slate-700 disabled:opacity-60"
+                  className="rounded-full border border-white/10 px-4 py-2 text-sm text-[#F5F5F5]/85 disabled:opacity-60"
                   disabled={reportPostMutation.isPending}
                   onClick={handleReportPost}
                   type="button"
@@ -226,7 +226,7 @@ export const PostPage = () => {
               ) : null}
             </div>
             {reportStatus ? (
-              <p className={`mt-4 text-sm ${reportStatus === 'Report submitted for admin review.' ? 'text-emerald-700' : 'text-rose-600'}`}>
+              <p className={`mt-4 text-sm ${reportStatus === 'Report submitted.' ? 'text-[#FF5A2F]' : 'text-[#FF5A2F]'}`}>
                 {reportStatus}
               </p>
             ) : null}
@@ -242,17 +242,17 @@ export const PostPage = () => {
             }}
           >
             <textarea
-              className="min-h-28 w-full rounded-[1.5rem] border border-slate-200 px-4 py-3"
+              className="min-h-28 w-full rounded-[1.5rem] border border-white/10 px-4 py-3"
               maxLength={1000}
               onChange={(event) => setCommentBody(event.target.value)}
               placeholder="Write a comment"
               value={commentBody}
             />
             {createCommentMutation.isError ? (
-              <p className="text-sm text-rose-600">Could not add your comment right now.</p>
+              <p className="text-sm text-[#FF5A2F]">Could not add comment.</p>
             ) : null}
             <button
-              className="rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white disabled:opacity-60"
+              className="rounded-full bg-[#FF5A2F] px-5 py-3 text-sm font-medium text-[#0D0D0D] disabled:opacity-60"
               disabled={createCommentMutation.isPending || !commentBody.trim()}
               type="submit"
             >
@@ -261,17 +261,17 @@ export const PostPage = () => {
           </form>
           <div className="mt-4 space-y-3">
             {(postQuery.data?.comments ?? []).map((comment) => (
-              <div key={comment.id} className="rounded-[1.5rem] border border-slate-200 p-4">
+              <div key={comment.id} className="rounded-[1.5rem] border border-white/10 p-4">
                 <div className="flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-sm text-slate-500">{comment.author.displayName}</p>
-                    <p className="text-xs uppercase tracking-[0.16em] text-slate-400">
+                    <p className="text-sm text-[#F5F5F5]/60">{comment.author.displayName}</p>
+                    <p className="text-xs uppercase tracking-[0.16em] text-[#F5F5F5]/45">
                       {new Date(comment.createdAt).toLocaleString()}
                     </p>
                   </div>
                   {comment.canDelete ? (
                     <button
-                      className="rounded-full border border-rose-200 px-3 py-1 text-xs text-rose-700 disabled:opacity-60"
+                      className="rounded-full border border-[#FF5A2F]/35 px-3 py-1 text-xs text-[#FF5A2F] disabled:opacity-60"
                       disabled={deleteCommentMutation.isPending}
                       onClick={() => deleteCommentMutation.mutate(comment.id)}
                       type="button"
@@ -290,5 +290,12 @@ export const PostPage = () => {
     </div>
   );
 };
+
+
+
+
+
+
+
 
 

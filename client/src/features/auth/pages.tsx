@@ -1,4 +1,4 @@
-import type { PropsWithChildren } from 'react';
+﻿import type { PropsWithChildren } from 'react';
 import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -34,10 +34,10 @@ const registerFormSchema = registerSchema
   });
 
 const inputClass =
-  'w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-400';
+  'w-full rounded-2xl border border-white/10 px-4 py-3 outline-none transition focus:border-[#FF5A2F]';
 
 const fieldError = (message?: string) =>
-  message ? <p className="mt-1 text-sm text-rose-600">{message}</p> : null;
+  message ? <p className="mt-1 text-sm text-[#FF5A2F]">{message}</p> : null;
 
 const AuthLayout = ({
   title,
@@ -80,7 +80,7 @@ const LoginForm = () => {
   const clearError = useAuthStore((state) => state.clearError);
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { email: 'parent@newsocial.local', password: 'Password123!' },
+    defaultValues: { identifier: 'parent@newsocial.local', password: 'Password123!' },
   });
 
   return (
@@ -97,8 +97,8 @@ const LoginForm = () => {
       })}
     >
       <div>
-        <input className={inputClass} placeholder="Email" {...form.register('email')} />
-        {fieldError(form.formState.errors.email?.message)}
+        <input className={inputClass} placeholder="Email or username" {...form.register('identifier')} />
+        {fieldError(form.formState.errors.identifier?.message)}
       </div>
       <div className="space-y-2">
         <div className="flex items-center gap-3">
@@ -109,7 +109,7 @@ const LoginForm = () => {
             {...form.register('password')}
           />
           <button
-            className="rounded-full border border-slate-200 px-4 py-3 text-sm text-slate-600 transition hover:bg-slate-50"
+            className="rounded-full border border-white/10 px-4 py-3 text-sm text-[#F5F5F5]/75 transition hover:bg-white/12/5"
             onClick={() => setShowPassword((current) => !current)}
             type="button"
           >
@@ -118,9 +118,9 @@ const LoginForm = () => {
         </div>
         {fieldError(form.formState.errors.password?.message)}
       </div>
-      {errorMessage ? <p className="text-sm text-rose-600">{errorMessage}</p> : null}
+      {errorMessage ? <p className="text-sm text-[#FF5A2F]">{errorMessage}</p> : null}
       <button
-        className="rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white disabled:opacity-60"
+        className="rounded-full bg-[#FF5A2F] px-5 py-3 text-sm font-medium text-[#0D0D0D] disabled:opacity-60"
         disabled={form.formState.isSubmitting}
         type="submit"
       >
@@ -198,7 +198,7 @@ const RegisterForm = () => {
         {fieldError(form.formState.errors.confirmPassword?.message)}
       </div>
       <button
-        className="rounded-full border border-slate-200 px-4 py-3 text-sm text-slate-600 transition hover:bg-slate-50"
+        className="rounded-full border border-white/10 px-4 py-3 text-sm text-[#F5F5F5]/75 transition hover:bg-white/12/5"
         onClick={() => setShowPassword((current) => !current)}
         type="button"
       >
@@ -207,13 +207,13 @@ const RegisterForm = () => {
       <div>
         <input className={inputClass} placeholder="Family code (optional)" {...form.register('familyCode')} />
         {fieldError(form.formState.errors.familyCode?.message)}
-        <p className="mt-2 text-sm text-slate-500">
-          Leave blank for a regular account. Enter a valid family code to link this account under a family manager.
+        <p className="mt-2 text-sm text-[#F5F5F5]/60">
+          Optional. Use this to join a family.
         </p>
       </div>
-      {errorMessage ? <p className="text-sm text-rose-600">{errorMessage}</p> : null}
+      {errorMessage ? <p className="text-sm text-[#FF5A2F]">{errorMessage}</p> : null}
       <button
-        className="rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white disabled:opacity-60"
+        className="rounded-full bg-[#FF5A2F] px-5 py-3 text-sm font-medium text-[#0D0D0D] disabled:opacity-60"
         disabled={form.formState.isSubmitting}
         type="submit"
       >
@@ -228,12 +228,12 @@ export const AuthPage = ({ mode }: { mode: 'login' | 'register' }) => (
     title={mode === 'login' ? 'Sign in' : 'Create account'}
     subtitle={
       mode === 'login'
-        ? 'Use your email and password.'
-        : 'Create an account. Add a family code only if this account should be linked under a family manager.'
+        ? 'Use your email or username.'
+        : 'Start your account.'
     }
   >
     {mode === 'login' ? <LoginForm /> : <RegisterForm />}
-    <div className="mt-6 flex gap-4 text-sm text-slate-500">
+    <div className="mt-6 flex gap-4 text-sm text-[#F5F5F5]/60">
       <Link to={mode === 'login' ? '/register' : '/login'}>
         {mode === 'login' ? 'Create an account' : 'Already have an account?'}
       </Link>
@@ -263,7 +263,7 @@ export const ChildAccessPage = () => {
   return (
     <AuthLayout
       title="Child first-time access"
-      subtitle="Enter the email and one-time code created by your parent or family manager."
+      subtitle="Enter your email and code."
     >
       <form
         className="space-y-4"
@@ -285,9 +285,9 @@ export const ChildAccessPage = () => {
           <input className={inputClass} placeholder="One-time access code" {...form.register('code')} />
           {fieldError(form.formState.errors.code?.message)}
         </div>
-        {errorMessage ? <p className="text-sm text-rose-600">{errorMessage}</p> : null}
+        {errorMessage ? <p className="text-sm text-[#FF5A2F]">{errorMessage}</p> : null}
         <button
-          className="rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white disabled:opacity-60"
+          className="rounded-full bg-[#FF5A2F] px-5 py-3 text-sm font-medium text-[#0D0D0D] disabled:opacity-60"
           disabled={form.formState.isSubmitting}
           type="submit"
         >
@@ -325,7 +325,7 @@ export const ChildSetPasswordPage = () => {
   return (
     <AuthLayout
       title="Set child password"
-      subtitle="This step is required after first-time code login. Future sign-ins use email and password."
+      subtitle="Create your password."
     >
       <form
         className="space-y-4"
@@ -352,9 +352,9 @@ export const ChildSetPasswordPage = () => {
           />
           {fieldError(form.formState.errors.confirmPassword?.message)}
         </div>
-        {errorMessage ? <p className="text-sm text-rose-600">{errorMessage}</p> : null}
+        {errorMessage ? <p className="text-sm text-[#FF5A2F]">{errorMessage}</p> : null}
         <button
-          className="rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white disabled:opacity-60"
+          className="rounded-full bg-[#FF5A2F] px-5 py-3 text-sm font-medium text-[#0D0D0D] disabled:opacity-60"
           disabled={form.formState.isSubmitting}
           type="submit"
         >
@@ -364,4 +364,13 @@ export const ChildSetPasswordPage = () => {
     </AuthLayout>
   );
 };
+
+
+
+
+
+
+
+
+
 

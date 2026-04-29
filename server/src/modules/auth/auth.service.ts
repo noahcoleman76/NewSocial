@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt';
+﻿import bcrypt from 'bcrypt';
 import { createHash, randomUUID, timingSafeEqual } from 'node:crypto';
 import { env } from '@/config/env';
 import { AppError } from '@/lib/errors';
@@ -114,17 +114,21 @@ export const authService = {
     };
   },
 
-  login: async (input: { email: string; password: string }) => {
-    const user = await authRepository.findUserByEmail(input.email);
+  login: async (input: { identifier: string; password: string }) => {
+    const identifier = input.identifier.trim().toLowerCase();
+    const user = identifier.includes('@')
+      ? await authRepository.findUserByEmail(identifier)
+      : await authRepository.findUserByUsername(identifier);
+
     if (!user || !user.passwordHash) {
-      throw new AppError('INVALID_CREDENTIALS', 'Invalid email or password', 401);
+      throw new AppError('INVALID_CREDENTIALS', 'Invalid email, username, or password', 401);
     }
 
     assertLoginAllowed(user);
 
     const passwordMatches = await bcrypt.compare(input.password, user.passwordHash);
     if (!passwordMatches) {
-      throw new AppError('INVALID_CREDENTIALS', 'Invalid email or password', 401);
+      throw new AppError('INVALID_CREDENTIALS', 'Invalid email, username, or password', 401);
     }
 
     const session = await createSessionTokens(user);
@@ -297,3 +301,4 @@ export const authService = {
     return toAuthUser(user);
   },
 };
+
