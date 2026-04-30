@@ -1,2 +1,2 @@
-notifications for messages
-link existing accounts to parent accounts
+figure out images
+allow easy color changes

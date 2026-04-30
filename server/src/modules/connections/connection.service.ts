@@ -145,15 +145,18 @@ export const connectionService = {
             };
           }),
       ],
-      pendingApprovals: pendingApprovals.map((connection) => {
-        const otherUser = connection.userAId === userId ? connection.userB : connection.userA;
+      pendingApprovals:
+        user.role === 'CHILD'
+          ? pendingApprovals.map((connection) => {
+              const otherUser = connection.userAId === userId ? connection.userB : connection.userA;
 
-        return {
-          id: connection.id,
-          createdAt: connection.createdAt,
-          user: mapRelationshipUser(otherUser),
-        };
-      }),
+              return {
+                id: connection.id,
+                createdAt: connection.createdAt,
+                user: mapRelationshipUser(otherUser),
+              };
+            })
+          : [],
       incomingRequests: incomingRequests.map((request) => ({
         id: request.id,
         createdAt: request.createdAt,

@@ -1,6 +1,7 @@
-﻿import { useNavigate } from 'react-router-dom';
+﻿import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/lib/api';
+import { api, assetUrl } from '@/lib/api';
 import { PageCard } from '@/components/page-card';
 import type { ConnectionListItem, ConnectionRequestListItem } from '@/types/app';
 
@@ -16,6 +17,7 @@ const cardClass = 'rounded-[1.5rem] border border-white/10 p-4';
 export const ConnectionsPage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [connectionSearch, setConnectionSearch] = useState('');
 
   const connectionsQuery = useQuery({
     queryKey: ['connections'],
@@ -62,15 +64,33 @@ export const ConnectionsPage = () => {
   });
 
   const busy = acceptRequestMutation.isPending || cancelRequestMutation.isPending || removeConnectionMutation.isPending;
+  const filteredConnections = useMemo(() => {
+    const connections = connectionsQuery.data?.connections ?? [];
+    const term = connectionSearch.trim().toLowerCase();
+
+    if (!term) {
+      return connections;
+    }
+
+    return connections.filter((connection) =>
+      `${connection.user.displayName} ${connection.user.username}`.toLowerCase().includes(term),
+    );
+  }, [connectionSearch, connectionsQuery.data?.connections]);
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       <PageCard title="Connected">
+        <input
+          className="mb-4 w-full rounded-[1.5rem] border border-white/10 bg-[#171514] px-4 py-3 text-sm text-[#F5F5F5] outline-none placeholder:text-[#F5F5F5]/45 focus:border-[#FF5A2F]"
+          onChange={(event) => setConnectionSearch(event.target.value)}
+          placeholder="Search connections"
+          value={connectionSearch}
+        />
         {connectionsQuery.isLoading ? <p className="text-sm text-[#F5F5F5]/60">Loading connections...</p> : null}
         {connectionsQuery.isError ? <p className="text-sm text-[#FF5A2F]">Could not load connections.</p> : null}
         {connectionsQuery.data?.connections.length ? (
           <div className="space-y-3">
-            {connectionsQuery.data.connections.map((connection) => (
+            {filteredConnections.map((connection) => (
               <div
                 key={connection.id}
                 className={`${cardClass} cursor-pointer transition hover:bg-white/12/5`}
@@ -84,13 +104,25 @@ export const ConnectionsPage = () => {
                   }
                 }}
               >
-                <p className="font-medium">{connection.user.displayName}</p>
-                <p className="text-sm text-[#F5F5F5]/60">@{connection.user.username}</p>
-                {connection.user.isFamilyLinked ? (
-                  <p className="mt-2 text-xs uppercase tracking-[0.16em] text-[#FF5A2F]">Family-linked account</p>
-                ) : null}
+                <div className="flex items-center gap-3">
+                  {connection.user.profileImageUrl ? (
+                    <img
+                      alt=""
+                      className="h-12 w-12 rounded-full object-cover"
+                      src={assetUrl(connection.user.profileImageUrl) ?? connection.user.profileImageUrl}
+                    />
+                  ) : (
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/12 text-sm font-semibold text-[#F5F5F5]/65">
+                      {connection.user.displayName.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <p className="truncate font-medium">{connection.user.displayName}</p>
+                    <p className="truncate text-sm text-[#F5F5F5]/60">@{connection.user.username}</p>
+                  </div>
+                </div>
                 {connection.user.isFamilyConnection ? (
-                  <p className="mt-4 text-sm text-[#F5F5F5]/60">Family connection.</p>
+                  <p className="mt-4 text-sm font-medium text-[#FF5A2F]">Family connection.</p>
                 ) : (
                   <div className="mt-4">
                     <button
@@ -112,6 +144,9 @@ export const ConnectionsPage = () => {
             ))}
           </div>
         ) : null}
+        {connectionsQuery.data && connectionsQuery.data.connections.length > 0 && filteredConnections.length === 0 ? (
+          <p className="text-sm text-[#F5F5F5]/60">No matching connections.</p>
+        ) : null}
         {connectionsQuery.data && connectionsQuery.data.connections.length === 0 ? (
           <p className="text-sm text-[#F5F5F5]/60">No connections yet.</p>
         ) : null}
@@ -121,33 +156,30 @@ export const ConnectionsPage = () => {
         {connectionsQuery.data ? (
           <div className="space-y-5">
             <section className="space-y-3">
-              <h3 className="text-sm font-medium uppercase tracking-[0.18em] text-[#F5F5F5]/60">Waiting for family approval</h3>
               {connectionsQuery.data.pendingApprovals.length ? (
-                connectionsQuery.data.pendingApprovals.map((connection) => (
-                  <div key={connection.id} className={cardClass}>
-                    <p className="font-medium">{connection.user.displayName}</p>
-                    <p className="text-sm text-[#F5F5F5]/60">@{connection.user.username}</p>
-                    <p className="mt-2 text-sm text-[#F5F5F5]/60">
-                      Waiting for family approval.
-                    </p>
-                  </div>
-                ))
-              ) : (
-                <p className="text-sm text-[#F5F5F5]/60">No approvals pending.</p>
-              )}
+                <>
+                  <h3 className="text-sm font-medium uppercase tracking-[0.18em] text-[#F5F5F5]/60">Waiting for family approval</h3>
+                  {connectionsQuery.data.pendingApprovals.map((connection) => (
+                    <div key={connection.id} className={cardClass}>
+                      <p className="font-medium">{connection.user.displayName}</p>
+                      <p className="text-sm text-[#F5F5F5]/60">@{connection.user.username}</p>
+                      <p className="mt-2 text-sm text-[#F5F5F5]/60">
+                        Waiting for family approval.
+                      </p>
+                    </div>
+                  ))}
+                </>
+              ) : null}
             </section>
             <section className="space-y-3">
-              <h3 className="text-sm font-medium uppercase tracking-[0.18em] text-[#F5F5F5]/60">Incoming requests</h3>
+              {connectionsQuery.data.incomingRequests.length ? (
+                <h3 className="text-sm font-medium uppercase tracking-[0.18em] text-[#F5F5F5]/60">Incoming requests</h3>
+              ) : null}
               {connectionsQuery.data.incomingRequests.length ? (
                 connectionsQuery.data.incomingRequests.map((request) => (
                   <div key={request.id} className={cardClass}>
                     <p className="font-medium">{request.user.displayName}</p>
                     <p className="text-sm text-[#F5F5F5]/60">@{request.user.username}</p>
-                    {request.user.isFamilyLinked ? (
-                      <p className="mt-2 text-xs uppercase tracking-[0.16em] text-[#FF5A2F]">
-                        Family-linked account
-                      </p>
-                    ) : null}
                     <div className="mt-4">
                       <button
                         className="rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-[#F5F5F5]/85 disabled:opacity-60"
@@ -164,35 +196,13 @@ export const ConnectionsPage = () => {
                 <p className="text-sm text-[#F5F5F5]/60">No incoming requests.</p>
               )}
             </section>
-            <section className="space-y-3">
-              <h3 className="text-sm font-medium uppercase tracking-[0.18em] text-[#F5F5F5]/60">Outgoing requests</h3>
-              {connectionsQuery.data.outgoingRequests.length ? (
-                connectionsQuery.data.outgoingRequests.map((request) => (
-                  <div key={request.id} className={cardClass}>
-                    <p className="font-medium">{request.user.displayName}</p>
-                    <p className="text-sm text-[#F5F5F5]/60">@{request.user.username}</p>
-                    <div className="mt-4">
-                      <button
-                        className="rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-[#F5F5F5]/85 disabled:opacity-60"
-                        disabled={busy}
-                        onClick={() => cancelRequestMutation.mutate(request.id)}
-                        type="button"
-                      >
-                        {cancelRequestMutation.isPending ? 'Working...' : 'Cancel request'}
-                      </button>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-sm text-[#F5F5F5]/60">No outgoing requests.</p>
-              )}
-            </section>
           </div>
         ) : null}
       </PageCard>
     </div>
   );
 };
+
 
 
 

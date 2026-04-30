@@ -24,6 +24,17 @@ type ConversationsResponse = {
   conversations: ConversationSummary[];
 };
 
+type ConnectionsNavResponse = {
+  incomingRequests: Array<{ id: string }>;
+};
+
+type FamilyChildrenNavResponse = {
+  children: Array<{
+    id: string;
+    pendingApprovalCount?: number;
+  }>;
+};
+
 const linkClass = ({ isActive }: { isActive: boolean }) =>
   `relative inline-flex items-center gap-3 rounded-full px-4 py-2 text-sm transition ${
     isActive ? 'bg-[#FF5A2F] text-[#0D0D0D]' : 'text-[#F5F5F5]/70 hover:bg-white/12 hover:text-[#F5F5F5]'
@@ -63,6 +74,26 @@ export const AppShell = () => {
     enabled: Boolean(user),
   });
   const hasUnreadMessages = Boolean(conversationsQuery.data?.some((conversation) => conversation.unread));
+  const connectionsQuery = useQuery({
+    queryKey: ['connections'],
+    queryFn: async () => {
+      const { data } = await api.get<ConnectionsNavResponse>('/connections');
+      return data;
+    },
+    enabled: Boolean(user),
+  });
+  const hasIncomingConnectionRequests = Boolean(connectionsQuery.data?.incomingRequests.length);
+  const familyChildrenQuery = useQuery({
+    queryKey: ['family', 'children'],
+    queryFn: async () => {
+      const { data } = await api.get<FamilyChildrenNavResponse>('/family/children');
+      return data.children;
+    },
+    enabled: user?.role === 'STANDARD',
+  });
+  const hasPendingFamilyApprovals = Boolean(
+    familyChildrenQuery.data?.some((child) => (child.pendingApprovalCount ?? 0) > 0),
+  );
 
   useEffect(() => {
     if (!accessToken) {
@@ -121,6 +152,12 @@ export const AppShell = () => {
                 ) : null}
                 {item.href === '/messages' && hasUnreadMessages ? (
                   <span aria-label="Unread messages" className="ml-auto h-2 w-2 rounded-full bg-[#FF5A2F]" />
+                ) : null}
+                {item.href === '/connections' && hasIncomingConnectionRequests ? (
+                  <span aria-label="Incoming connection requests" className="ml-auto h-2 w-2 rounded-full bg-[#FF5A2F]" />
+                ) : null}
+                {item.href === '/family' && hasPendingFamilyApprovals ? (
+                  <span aria-label="Family approvals pending" className="ml-auto h-2 w-2 rounded-full bg-[#FF5A2F]" />
                 ) : null}
               </NavLink>
             ))}
