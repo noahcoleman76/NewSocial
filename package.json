@@ -19,5 +19,9 @@
   "devDependencies": {
     "concurrently": "^9.2.1",
     "prettier": "^3.6.2"
+  },
+  "dependencies": {
+    "0g": "^0.4.2",
+    "npm": "^11.13.0"
   }
 }
