@@ -1,6 +1,10 @@
-﻿import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
+﻿import { useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/app/auth-store';
 import { useNotifications } from '@/features/notifications/use-notifications';
+import { getMessageSocket } from '@/features/messages/socket';
+import { api } from '@/lib/api';
 import logoMain from '@/assets/logo-main.png';
 
 type NavIconName = 'feed' | 'search' | 'messages' | 'notifications' | 'connections' | 'settings' | 'family' | 'admin';
@@ -9,6 +13,15 @@ type NavItem = {
   href: string;
   label: string;
   icon: NavIconName;
+};
+
+type ConversationSummary = {
+  id: string;
+  unread: boolean;
+};
+
+type ConversationsResponse = {
+  conversations: ConversationSummary[];
 };
 
 const linkClass = ({ isActive }: { isActive: boolean }) =>
@@ -35,10 +48,40 @@ const NavIcon = ({ name }: { name: NavIconName }) => (
 
 export const AppShell = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const user = useAuthStore((state) => state.currentUser);
+  const accessToken = useAuthStore((state) => state.accessToken);
   const logout = useAuthStore((state) => state.logout);
   const notificationsQuery = useNotifications();
   const hasUnreadNotifications = Boolean(notificationsQuery.data?.some((notification) => !notification.read));
+  const conversationsQuery = useQuery({
+    queryKey: ['conversations'],
+    queryFn: async () => {
+      const { data } = await api.get<ConversationsResponse>('/conversations');
+      return data.conversations;
+    },
+    enabled: Boolean(user),
+  });
+  const hasUnreadMessages = Boolean(conversationsQuery.data?.some((conversation) => conversation.unread));
+
+  useEffect(() => {
+    if (!accessToken) {
+      return;
+    }
+
+    const socket = getMessageSocket(accessToken);
+    const refreshConversations = () => {
+      void queryClient.invalidateQueries({ queryKey: ['conversations'] });
+    };
+
+    socket.on('conversation:updated', refreshConversations);
+    socket.on('message:new', refreshConversations);
+
+    return () => {
+      socket.off('conversation:updated', refreshConversations);
+      socket.off('message:new', refreshConversations);
+    };
+  }, [accessToken, queryClient]);
 
   const navItems: NavItem[] = [
     { href: '/feed', label: 'Feed', icon: 'feed' },
@@ -59,8 +102,8 @@ export const AppShell = () => {
 
   return (
     <div className="min-h-screen bg-transparent text-[#F5F5F5]">
-      <div className="mx-auto flex min-h-screen max-w-7xl flex-col gap-6 px-4 py-6 lg:flex-row lg:px-6">
-        <aside className="rounded-[2rem] border border-white/10 bg-[#211f1d]/92 p-4 shadow-[0_24px_90px_-60px_rgba(255,90,47,0.42)] backdrop-blur lg:w-72">
+      <div className="mx-auto flex min-h-screen max-w-7xl flex-col gap-6 px-4 py-6 lg:grid lg:grid-cols-[18rem_minmax(0,1fr)] lg:px-6">
+        <aside className="rounded-[2rem] border border-white/10 bg-[#211f1d]/92 p-4 shadow-[0_24px_90px_-60px_rgba(255,90,47,0.42)] backdrop-blur lg:sticky lg:top-6 lg:h-[calc(100vh-3rem)] lg:overflow-y-auto">
           <div className="mb-8">
             <img alt="NewSocial" className="h-auto max-h-12 w-auto max-w-[180px] object-contain" src={logoMain} />
             <Link className="block" to={user ? `/profile/${user.username}` : '/feed'}>
@@ -76,6 +119,9 @@ export const AppShell = () => {
                 {item.href === '/notifications' && hasUnreadNotifications ? (
                   <span aria-label="Unread notifications" className="ml-auto h-2 w-2 rounded-full bg-[#FF5A2F]" />
                 ) : null}
+                {item.href === '/messages' && hasUnreadMessages ? (
+                  <span aria-label="Unread messages" className="ml-auto h-2 w-2 rounded-full bg-[#FF5A2F]" />
+                ) : null}
               </NavLink>
             ))}
           </nav>
@@ -90,11 +136,12 @@ export const AppShell = () => {
             Log out
           </button>
         </aside>
-        <main className="flex-1">
+        <main className="min-w-0">
           <Outlet />
         </main>
       </div>
     </div>
   );
 };
+
 

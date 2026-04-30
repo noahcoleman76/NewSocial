@@ -1,7 +1,7 @@
 ﻿import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/lib/api';
+import { api, assetUrl } from '@/lib/api';
 import { PageCard } from '@/components/page-card';
 
 type ProfilePost = {
@@ -242,7 +242,7 @@ export const ProfilePage = () => {
           <div className="space-y-5">
             <div className="flex items-start gap-4">
               {profile.profileImageUrl ? (
-                <img alt="" className="h-20 w-20 rounded-full object-cover" src={profile.profileImageUrl} />
+                <img alt="" className="h-20 w-20 rounded-full object-cover" src={assetUrl(profile.profileImageUrl) ?? profile.profileImageUrl} />
               ) : (
                 <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white/12 text-xl font-semibold text-[#F5F5F5]/60">
                   {profile.displayName.charAt(0).toUpperCase()}
@@ -425,11 +425,11 @@ export const ProfilePage = () => {
                   <p className="text-xs uppercase tracking-[0.18em] text-[#F5F5F5]/45">
                     {new Date(post.createdAt).toLocaleDateString()}
                   </p>
-                  {post.caption ? <p className="mt-3 text-sm leading-7 text-[#F5F5F5]/85">{post.caption}</p> : null}
+                  {post.caption ? <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-[#F5F5F5]/85">{post.caption}</p> : null}
                   {post.images.length ? (
                     <div className="mt-4 grid gap-3 sm:grid-cols-2">
                       {post.images.map((imageUrl) => (
-                        <img key={imageUrl} alt="" className="rounded-[1.25rem] border border-white/10 object-cover" src={imageUrl} />
+                        <img key={imageUrl} alt="" className="rounded-[1.25rem] border border-white/10 object-cover" src={assetUrl(imageUrl) ?? imageUrl} />
                       ))}
                     </div>
                   ) : null}

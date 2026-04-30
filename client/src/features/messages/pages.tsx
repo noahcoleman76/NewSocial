@@ -1,7 +1,7 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/lib/api';
+import { api, assetUrl } from '@/lib/api';
 import { PageCard } from '@/components/page-card';
 import { useAuthStore } from '@/app/auth-store';
 import { getMessageSocket } from './socket';
@@ -250,6 +250,8 @@ export const ConversationPage = () => {
   useMessageRealtime(useParams().conversationId);
 
   const queryClient = useQueryClient();
+  const bottomRef = useRef<HTMLDivElement | null>(null);
+  const accessToken = useAuthStore((state) => state.accessToken);
   const { conversationId = '' } = useParams();
   const [body, setBody] = useState('');
   const [files, setFiles] = useState<File[]>([]);
@@ -274,6 +276,34 @@ export const ConversationPage = () => {
       void queryClient.invalidateQueries({ queryKey: ['conversation', conversationId] });
     });
   }, [conversationId, queryClient]);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  }, [conversationQuery.data?.messages.length]);
+
+  useEffect(() => {
+    if (!accessToken || !conversationId) {
+      return;
+    }
+
+    const socket = getMessageSocket(accessToken);
+    const markActiveConversationOpen = (payload: { conversationId: string }) => {
+      if (payload.conversationId !== conversationId) {
+        return;
+      }
+
+      void api.post(`/conversations/${conversationId}/open`).then(() => {
+        void queryClient.invalidateQueries({ queryKey: ['conversations'] });
+        void queryClient.invalidateQueries({ queryKey: ['conversation', conversationId] });
+      });
+    };
+
+    socket.on('message:new', markActiveConversationOpen);
+
+    return () => {
+      socket.off('message:new', markActiveConversationOpen);
+    };
+  }, [accessToken, conversationId, queryClient]);
 
   const sendMutation = useMutation({
     mutationFn: async () => {
@@ -307,47 +337,57 @@ export const ConversationPage = () => {
   });
 
   const participant = conversationQuery.data?.participant;
+  const recipientLabel = participant ? `@${participant.username}` : 'Deleted User';
 
   return (
-    <PageCard title="Conversation" subtitle={participant ? `Messaging ${participant.displayName}` : 'Direct message'}>
-      {conversationQuery.isLoading ? <p className="text-sm text-[#F5F5F5]/60">Loading conversation...</p> : null}
-      {conversationQuery.isError ? <p className="text-sm text-[#FF5A2F]">Could not load conversation.</p> : null}
+    <section className="overflow-hidden rounded-[2rem] border border-white/10 bg-[#211f1d]/92 shadow-[0_24px_90px_-60px_rgba(255,90,47,0.42)]">
+      <div className="sticky top-0 z-20 flex items-center gap-4 border-b border-white/10 bg-[#211f1d]/95 px-4 py-4 shadow-[0_18px_35px_-30px_rgba(0,0,0,0.85)] backdrop-blur">
+        <Link
+          className="rounded-full border border-white/10 px-3 py-2 text-sm text-[#F5F5F5]/80 transition hover:border-[#FF5A2F]/40 hover:bg-[#FF5A2F]/10 hover:text-[#FF5A2F]"
+          to="/messages"
+        >
+          Inbox
+        </Link>
+        <div className="min-w-0">
+          <p className="truncate text-base font-semibold text-[#F5F5F5]">{recipientLabel}</p>
+          {participant ? <p className="truncate text-sm text-[#F5F5F5]/55">{participant.displayName}</p> : null}
+        </div>
+      </div>
+
+      {conversationQuery.isLoading ? <p className="p-4 text-sm text-[#F5F5F5]/60">Loading conversation...</p> : null}
+      {conversationQuery.isError ? <p className="p-4 text-sm text-[#FF5A2F]">Could not load conversation.</p> : null}
       {conversationQuery.data ? (
         <>
-          <div className="mb-4 flex items-center justify-between gap-4">
-            <div>
-              <p className="font-medium text-[#F5F5F5]">{participant ? participant.displayName : 'Deleted User'}</p>
-              <p className="mt-1 text-sm text-[#F5F5F5]/60">
-                {participant ? `@${participant.username}` : 'Account removed'}
-              </p>
-            </div>
-            <Link className="rounded-full border border-white/10 px-4 py-2 text-sm text-[#F5F5F5]/85" to="/messages">
-              Back to inbox
-            </Link>
-          </div>
-          <div className="space-y-3">
+          <div className="min-h-[58vh] space-y-2 px-4 py-5 pb-8">
             {conversationQuery.data.messages.length ? (
               conversationQuery.data.messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`rounded-[1.5rem] border p-4 ${
-                    message.isMine ? 'border-white/10 bg-white/7' : 'border-white/10 bg-white'
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-4">
-                    <p className="text-sm text-[#F5F5F5]/60">{message.author.name}</p>
-                    <p className="text-xs uppercase tracking-[0.16em] text-[#F5F5F5]/45">
-                      {new Date(message.createdAt).toLocaleString()}
-                    </p>
+                <div key={message.id} className={`flex ${message.isMine ? 'justify-end' : 'justify-start'}`}>
+                  <div
+                    className={`max-w-[75%] rounded-[1.35rem] px-3 py-2 text-sm leading-6 shadow-[0_14px_38px_-30px_rgba(0,0,0,0.9)] ${
+                      message.isMine
+                        ? 'rounded-br-md bg-[#E4572E] text-white'
+                        : 'rounded-bl-md bg-white/10 text-[#F5F5F5]'
+                    }`}
+                    title={new Date(message.createdAt).toLocaleString()}
+                  >
+                    {message.imageUrls.length ? (
+                      <div className="grid gap-2">
+                        {message.imageUrls.map((imageUrl) => (
+                          <img
+                            key={imageUrl}
+                            alt=""
+                            className="max-h-80 w-full rounded-[1rem] object-contain"
+                            src={assetUrl(imageUrl) ?? imageUrl}
+                          />
+                        ))}
+                      </div>
+                    ) : null}
+                    {message.body ? (
+                      <p className={message.imageUrls.length ? 'mt-2 whitespace-pre-wrap' : 'whitespace-pre-wrap'}>
+                        {message.body}
+                      </p>
+                    ) : null}
                   </div>
-                  {message.body ? <p className="mt-2">{message.body}</p> : null}
-                  {message.imageUrls.length ? (
-                    <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                      {message.imageUrls.map((imageUrl) => (
-                        <img key={imageUrl} alt="" className="rounded-[1.25rem] border border-white/10 object-cover" src={imageUrl} />
-                      ))}
-                    </div>
-                  ) : null}
                 </div>
               ))
             ) : (
@@ -355,51 +395,64 @@ export const ConversationPage = () => {
                 No messages yet.
               </div>
             )}
+            <div ref={bottomRef} />
           </div>
+
           <form
-            className="mt-6 space-y-4"
+            className="sticky bottom-0 z-10 border-t border-white/10 bg-[#211f1d]/95 px-4 py-4 backdrop-blur"
             onSubmit={(event) => {
               event.preventDefault();
               setSubmitError(null);
               sendMutation.mutate();
             }}
           >
-            <textarea
-              className="min-h-28 w-full rounded-[1.5rem] border border-white/10 px-4 py-3"
-              maxLength={1000}
-              onChange={(event) => setBody(event.target.value)}
-              placeholder="Write a message"
-              value={body}
-            />
-            <label className="block cursor-pointer rounded-full border border-white/10 px-4 py-3 text-center text-sm font-medium text-[#F5F5F5]/85 transition hover:bg-white/12/5">
-              Choose up to 3 images
+            <div className="flex items-center gap-2 rounded-full border border-white/10 bg-[#171514] p-2">
+              <label className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full text-[#F5F5F5]/70 transition hover:bg-white/10 hover:text-[#FF5A2F]">
+                <span className="sr-only">Add images</span>
+                <svg aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.9" viewBox="0 0 24 24">
+                  <path d="M4 7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V7Z" />
+                  <path d="m4 16 4.5-4.5a2 2 0 0 1 2.8 0L17 17" />
+                  <path d="M8.5 8.5h.01" />
+                </svg>
+                <input
+                  accept="image/png,image/jpeg,image/webp"
+                  className="hidden"
+                  multiple
+                  onChange={(event) => {
+                    setFiles(Array.from(event.target.files ?? []).slice(0, 3));
+                    event.target.value = '';
+                  }}
+                  type="file"
+                />
+              </label>
               <input
-                accept="image/png,image/jpeg,image/webp"
-                className="hidden"
-                multiple
-                onChange={(event) => setFiles(Array.from(event.target.files ?? []).slice(0, 3))}
-                type="file"
+                className="min-w-0 flex-1 bg-transparent px-2 text-sm text-[#F5F5F5] outline-none placeholder:text-[#F5F5F5]/45"
+                maxLength={1000}
+                onChange={(event) => setBody(event.target.value)}
+                placeholder="Message"
+                value={body}
               />
-            </label>
+              <button
+                className="shrink-0 rounded-full bg-[#FF5A2F] px-4 py-2 text-sm font-medium text-[#0D0D0D] transition hover:bg-[#ff704d] disabled:opacity-50"
+                disabled={sendMutation.isPending || (!body.trim() && files.length === 0)}
+                type="submit"
+              >
+                {sendMutation.isPending ? 'Sending' : 'Send'}
+              </button>
+            </div>
             {files.length ? (
-              <p className="text-sm text-[#F5F5F5]/60">
+              <p className="mt-2 px-3 text-xs text-[#F5F5F5]/55">
                 {files.length} image{files.length === 1 ? '' : 's'} ready to send
               </p>
             ) : null}
-            {submitError ? <p className="text-sm text-[#FF5A2F]">{submitError}</p> : null}
-            <button
-              className="rounded-full bg-[#FF5A2F] px-5 py-3 text-sm font-medium text-[#0D0D0D] disabled:opacity-60"
-              disabled={sendMutation.isPending || (!body.trim() && files.length === 0)}
-              type="submit"
-            >
-              {sendMutation.isPending ? 'Sending...' : 'Send message'}
-            </button>
+            {submitError ? <p className="mt-2 px-3 text-sm text-[#FF5A2F]">{submitError}</p> : null}
           </form>
         </>
       ) : null}
-    </PageCard>
+    </section>
   );
 };
+
 
 
 

@@ -1,7 +1,7 @@
-﻿import { useState } from 'react';
+﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/lib/api';
+import { api, assetUrl } from '@/lib/api';
 import { PageCard } from '@/components/page-card';
 import type { FeedItem } from '@shared/types/domain';
 
@@ -17,19 +17,61 @@ const iconPaths: Record<FeedIconName, string> = {
   more: 'M6 12h.01M12 12h.01M18 12h.01',
 };
 
+const formatFeedDate = (value: string) => {
+  const date = new Date(value);
+  const day = date.getDate();
+  const suffix =
+    day % 10 === 1 && day !== 11
+      ? 'st'
+      : day % 10 === 2 && day !== 12
+        ? 'nd'
+        : day % 10 === 3 && day !== 13
+          ? 'rd'
+          : 'th';
+
+  return `${date.toLocaleString(undefined, { month: 'short' })} ${day}${suffix}, ${date.getFullYear()}`;
+};
+
 const FeedIcon = ({ name }: { name: FeedIconName }) => (
   <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.9" viewBox="0 0 24 24">
     <path d={iconPaths[name]} />
   </svg>
 );
 
+const ImageIcon = () => (
+  <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.9" viewBox="0 0 24 24">
+    <path d="M4 7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V7Z" />
+    <path d="m4 16 4.5-4.5a2 2 0 0 1 2.8 0L17 17" />
+    <path d="m14 14 1.2-1.2a2 2 0 0 1 2.8 0L20 15" />
+    <path d="M8.5 8.5h.01" />
+  </svg>
+);
+
 export const FeedPage = () => {
   const queryClient = useQueryClient();
+  const photoInputRef = useRef<HTMLInputElement | null>(null);
   const [caption, setCaption] = useState('');
   const [files, setFiles] = useState<File[]>([]);
   const [composerOpen, setComposerOpen] = useState(false);
   const [reportStatus, setReportStatus] = useState<string | null>(null);
   const [openPostMenuId, setOpenPostMenuId] = useState<string | null>(null);
+
+  const selectedPhotoPreviews = useMemo(
+    () =>
+      files.map((file, index) => ({
+        file,
+        index,
+        url: URL.createObjectURL(file),
+      })),
+    [files],
+  );
+
+  useEffect(
+    () => () => {
+      selectedPhotoPreviews.forEach((preview) => URL.revokeObjectURL(preview.url));
+    },
+    [selectedPhotoPreviews],
+  );
 
   const feedQuery = useQuery({
     queryKey: ['feed'],
@@ -123,6 +165,16 @@ export const FeedPage = () => {
     },
   });
 
+  const addSelectedPhotos = (selectedFiles: FileList | null) => {
+    if (!selectedFiles?.length) {
+      return;
+    }
+
+    setFiles((current) => [...current, ...Array.from(selectedFiles)].slice(0, 5));
+  };
+
+  const canSubmitPost = Boolean(caption.trim() || files.length);
+
   return (
     <div className="space-y-6">
       <PageCard title="Create post">
@@ -143,7 +195,7 @@ export const FeedPage = () => {
             }}
           >
             <textarea
-              className="min-h-32 w-full rounded-[1.5rem] border border-white/10 px-4 py-3 outline-none transition focus:border-[#FF5A2F]"
+              className="h-32 w-full resize-none rounded-[1.5rem] border border-white/10 px-4 py-3 outline-none transition focus:border-[#FF5A2F]"
               maxLength={1000}
               onChange={(event) => setCaption(event.target.value)}
               placeholder="Write a post"
@@ -152,16 +204,39 @@ export const FeedPage = () => {
             <div className="space-y-3">
               <input
                 accept="image/png,image/jpeg,image/webp"
+                className="hidden"
                 multiple
-                onChange={(event) => setFiles(Array.from(event.target.files ?? []).slice(0, 5))}
+                onChange={(event) => {
+                  addSelectedPhotos(event.target.files);
+                  event.target.value = '';
+                }}
+                ref={photoInputRef}
                 type="file"
               />
-              {files.length ? (
-                <div className="flex flex-wrap gap-2 text-sm text-[#F5F5F5]/60">
-                  {files.map((file) => (
-                    <span key={`${file.name}-${file.size}`} className="rounded-full bg-white/12 px-3 py-1">
-                      {file.name}
-                    </span>
+              {files.length < 5 ? (
+                <button
+                  className="inline-flex items-center gap-2 rounded-full border border-white/10 px-5 py-3 text-sm font-medium text-[#F5F5F5]/85 transition hover:border-[#FF5A2F]/40 hover:bg-[#FF5A2F]/10 hover:text-[#FF5A2F]"
+                  onClick={() => photoInputRef.current?.click()}
+                  type="button"
+                >
+                  <ImageIcon />
+                  Add photos
+                </button>
+              ) : null}
+              {selectedPhotoPreviews.length ? (
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {selectedPhotoPreviews.map((preview) => (
+                    <div key={`${preview.file.name}-${preview.file.size}-${preview.index}`} className="relative overflow-hidden rounded-[1.25rem] border border-white/10 bg-white/7">
+                      <img alt="" className="h-36 w-full object-cover" src={preview.url} />
+                      <button
+                        aria-label={`Remove ${preview.file.name}`}
+                        className="absolute right-2 top-2 rounded-full bg-[#0D0D0D]/80 px-3 py-1 text-xs font-medium text-[#F5F5F5] transition hover:bg-[#FF5A2F] hover:text-[#0D0D0D]"
+                        onClick={() => setFiles((current) => current.filter((_, fileIndex) => fileIndex !== preview.index))}
+                        type="button"
+                      >
+                        Remove
+                      </button>
+                    </div>
                   ))}
                 </div>
               ) : null}
@@ -172,7 +247,7 @@ export const FeedPage = () => {
             <div className="flex flex-wrap gap-3">
               <button
                 className="rounded-full bg-[#FF5A2F] px-5 py-3 text-sm font-medium text-[#0D0D0D] disabled:opacity-60"
-                disabled={createPostMutation.isPending}
+                disabled={createPostMutation.isPending || !canSubmitPost}
                 type="submit"
               >
                 {createPostMutation.isPending ? 'Posting...' : 'Post'}
@@ -214,14 +289,14 @@ export const FeedPage = () => {
 
                       </div>
                       <p className="text-xs uppercase tracking-[0.2em] text-[#F5F5F5]/45">
-                        {new Date(item.createdAt).toLocaleDateString()}
+                        {formatFeedDate(item.createdAt)}
                       </p>
                     </div>
-                    {item.caption ? <p className="mt-4 text-sm leading-7 text-[#F5F5F5]/85">{item.caption}</p> : null}
+                    {item.caption ? <p className="mt-4 whitespace-pre-wrap text-sm leading-7 text-[#F5F5F5]/85">{item.caption}</p> : null}
                     {item.images.length ? (
                       <div className="mt-4 grid gap-3 sm:grid-cols-2">
                         {item.images.map((imageUrl) => (
-                          <img key={imageUrl} alt="" className="rounded-[1.25rem] border border-white/10 object-cover" src={imageUrl} />
+                          <img key={imageUrl} alt="" className="rounded-[1.25rem] border border-white/10 object-cover" src={assetUrl(imageUrl) ?? imageUrl} />
                         ))}
                       </div>
                     ) : null}
@@ -229,17 +304,19 @@ export const FeedPage = () => {
                       <div className="flex flex-wrap gap-3">
                         <button
                           aria-label={item.likedByMe ? 'Unlike post' : 'Like post'}
-                          className="inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-sm text-[#F5F5F5]/85 disabled:opacity-60"
+                          className="inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-sm text-[#F5F5F5]/85 transition hover:border-[#FF5A2F]/40 hover:bg-[#FF5A2F]/10 hover:text-[#FF5A2F] disabled:opacity-60"
                           disabled={likeMutation.isPending}
                           onClick={() => likeMutation.mutate({ postId: item.postId, likedByMe: item.likedByMe })}
                           type="button"
                         >
-                          <FeedIcon name="like" />
+                          <span className={item.likedByMe ? 'text-[#FF5A2F]' : undefined}>
+                            <FeedIcon name="like" />
+                          </span>
                           <span>{item.likeCount}</span>
                         </button>
                         <Link
                           aria-label="Open comments"
-                          className="inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-[#F5F5F5]/85"
+                          className="inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-[#F5F5F5]/85 transition hover:border-[#FF5A2F]/40 hover:bg-[#FF5A2F]/10 hover:text-[#FF5A2F]"
                           to={`/post/${item.postId}`}
                         >
                           <FeedIcon name="comment" />

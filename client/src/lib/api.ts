@@ -7,6 +7,20 @@ export const api = axios.create({
   withCredentials: true,
 });
 
+const apiOrigin = new URL(api.defaults.baseURL ?? 'http://localhost:4000/api').origin;
+
+export const assetUrl = (url: string | null | undefined) => {
+  if (!url) {
+    return null;
+  }
+
+  if (/^(https?:|blob:|data:)/i.test(url)) {
+    return url;
+  }
+
+  return `${apiOrigin}${url.startsWith('/') ? url : `/${url}`}`;
+};
+
 export const setAccessToken = (nextAccessToken: string | null) => {
   accessToken = nextAccessToken;
 };

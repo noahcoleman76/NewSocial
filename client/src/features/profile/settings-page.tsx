@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import { useAuthStore } from '@/app/auth-store';
 import { PageCard } from '@/components/page-card';
-import { api } from '@/lib/api';
+import { api, assetUrl } from '@/lib/api';
 
 type UpdateUserResponse = {
   user: {
@@ -57,7 +57,7 @@ export const SettingsPage = () => {
 
   const previewUrl = useMemo(() => {
     if (!selectedImage) {
-      return user?.profileImageUrl ?? null;
+      return assetUrl(user?.profileImageUrl) ?? null;
     }
 
     return URL.createObjectURL(selectedImage);
