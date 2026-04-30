@@ -1,7 +1,7 @@
 ﻿import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/lib/api';
+import { api, assetUrl } from '@/lib/api';
 import { PageCard } from '@/components/page-card';
 import type { SearchUser } from '@/types/app';
 
@@ -112,16 +112,24 @@ export const SearchPage = () => {
         ) : null}
         {searchQuery.data?.map((user) => (
           <div key={user.id} className="flex flex-wrap items-center justify-between gap-4 rounded-[1.5rem] border border-white/10 p-4">
-            <div>
-              <Link className="font-medium text-[#F5F5F5] hover:underline" to={`/profile/${user.username}`}>
-                {user.displayName}
-              </Link>
-              <p className="text-sm text-[#F5F5F5]/60">@{user.username}</p>
-              {user.isFamilyLinked ? (
-                <p className="mt-2 text-xs uppercase tracking-[0.16em] text-[#FF5A2F]">
-                  Family-linked account
-                </p>
-              ) : null}
+            <div className="flex min-w-0 items-center gap-3">
+              {user.profileImageUrl ? (
+                <img
+                  alt=""
+                  className="h-12 w-12 rounded-full object-cover"
+                  src={assetUrl(user.profileImageUrl) ?? user.profileImageUrl}
+                />
+              ) : (
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/12 text-sm font-semibold text-[#F5F5F5]/65">
+                  {user.displayName.charAt(0).toUpperCase()}
+                </div>
+              )}
+              <div className="min-w-0">
+                <Link className="block truncate font-medium text-[#F5F5F5] hover:underline" to={`/profile/${user.username}`}>
+                  {user.displayName}
+                </Link>
+                <p className="truncate text-sm text-[#F5F5F5]/60">@{user.username}</p>
+              </div>
               {user.relationship === 'PENDING_MANAGER_APPROVAL' ? (
                 <p className="mt-2 text-sm text-[#F5F5F5]/60">
                   Waiting for family approval.

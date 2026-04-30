@@ -184,6 +184,45 @@ export const connectionRepository = {
     return familyIds;
   },
 
+  findChildConnectionForManager: (managerUserId: string, targetUserId: string) =>
+    prisma.connection.findFirst({
+      where: {
+        status: {
+          in: ['ACTIVE', 'PENDING_MANAGER_APPROVAL'],
+        },
+        AND: [
+          {
+            OR: [{ approvingManagerId: managerUserId }, { approvingManagerId: null }],
+          },
+          {
+            OR: [
+              {
+                userAId: targetUserId,
+                userB: {
+                  parentId: managerUserId,
+                  role: 'CHILD',
+                  accountStatus: 'ACTIVE',
+                },
+              },
+              {
+                userBId: targetUserId,
+                userA: {
+                  parentId: managerUserId,
+                  role: 'CHILD',
+                  accountStatus: 'ACTIVE',
+                },
+              },
+            ],
+          },
+        ],
+        userA: { accountStatus: 'ACTIVE' },
+        userB: { accountStatus: 'ACTIVE' },
+      },
+      select: {
+        id: true,
+      },
+    }),
+
   listPendingApprovalConnections: (userId: string) =>
     prisma.connection.findMany({
       where: {

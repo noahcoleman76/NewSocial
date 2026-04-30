@@ -14,6 +14,7 @@ export const familyRepository = {
         id: true,
         username: true,
         displayName: true,
+        profileImageUrl: true,
         email: true,
         createdAt: true,
       },
@@ -282,6 +283,37 @@ export const familyRepository = {
       data: {
         status: 'REJECTED',
         rejectedAt: new Date(),
+      },
+    }),
+
+  removeChildConnection: (managerUserId: string, childId: string, connectionId: string) =>
+    prisma.connection.deleteMany({
+      where: {
+        id: connectionId,
+        status: 'ACTIVE',
+        AND: [
+          {
+            OR: [{ userAId: childId }, { userBId: childId }],
+          },
+          {
+            OR: [
+              {
+                userAId: childId,
+                userA: {
+                  parentId: managerUserId,
+                  role: 'CHILD',
+                },
+              },
+              {
+                userBId: childId,
+                userB: {
+                  parentId: managerUserId,
+                  role: 'CHILD',
+                },
+              },
+            ],
+          },
+        ],
       },
     }),
 

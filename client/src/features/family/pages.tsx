@@ -1,6 +1,7 @@
-﻿import { Link, useNavigate, useParams } from 'react-router-dom';
+﻿import { useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/lib/api';
+import { api, assetUrl } from '@/lib/api';
 import { PageCard } from '@/components/page-card';
 
 type FamilyCodeResponse = {
@@ -14,6 +15,7 @@ type FamilyChild = {
   username: string;
   displayName: string;
   email: string;
+  profileImageUrl?: string | null;
   createdAt: string;
   pendingApprovalCount?: number;
 };
@@ -124,11 +126,13 @@ export const FamilyPage = () => {
           ) : null}
           {codeQuery.data ? (
             <div className="rounded-[1.5rem] border border-white/10 bg-white/7 p-5">
-              <p className="text-xs uppercase tracking-[0.22em] text-[#F5F5F5]/45">Family code</p>
+              <p className="text-xs uppercase tracking-[0.22em] text-[#F5F5F5]/45">Add Family Member</p>
               <p className="mt-2 font-mono text-3xl font-semibold tracking-[0.18em] text-[#F5F5F5]">
                 {codeQuery.data.value}
               </p>
-              <p className="mt-2 text-sm text-[#F5F5F5]/60">Use this during signup.</p>
+              <p className="mt-2 text-sm text-[#F5F5F5]/60">
+                Use this code when creating a family member account you will manage.
+              </p>
             </div>
           ) : null}
           {codeQuery.isError ? <p className="text-sm text-[#FF5A2F]">Could not load code.</p> : null}
@@ -149,18 +153,29 @@ export const FamilyPage = () => {
                 className="rounded-[1.5rem] border border-white/10 p-5 transition hover:border-white/15 hover:bg-white/12/5"
                 to={`/family/child/${child.id}`}
               >
-                <p className="font-medium text-[#F5F5F5]">{child.displayName}</p>
-                <p className="mt-1 text-sm text-[#F5F5F5]/60">@{child.username}</p>
-                <p className="mt-3 text-sm text-[#F5F5F5]/75">{child.email}</p>
+                <div className="flex items-center gap-3">
+                  {child.profileImageUrl ? (
+                    <img
+                      alt=""
+                      className="h-12 w-12 rounded-full object-cover"
+                      src={assetUrl(child.profileImageUrl) ?? child.profileImageUrl}
+                    />
+                  ) : (
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/12 text-sm font-semibold text-[#F5F5F5]/65">
+                      {child.displayName.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <p className="truncate font-medium text-[#F5F5F5]">{child.displayName}</p>
+                    <p className="mt-1 truncate text-sm text-[#F5F5F5]/60">@{child.username}</p>
+                  </div>
+                </div>
                 {child.pendingApprovalCount ? (
                   <p className="mt-2 text-xs uppercase tracking-[0.18em] text-[#FF5A2F]">
                     {child.pendingApprovalCount} parent approval
                     {child.pendingApprovalCount === 1 ? '' : 's'} pending
                   </p>
                 ) : null}
-                <p className="mt-2 text-xs uppercase tracking-[0.18em] text-[#F5F5F5]/45">
-                  Joined {new Date(child.createdAt).toLocaleDateString()}
-                </p>
               </Link>
             ))}
           </div>
@@ -186,6 +201,14 @@ export const FamilyChildPage = () => {
     queryFn: async () => {
       const { data } = await api.get<FamilyChildResponse>(`/family/children/${childId}`);
       return data.child;
+    },
+    enabled: Boolean(childId),
+  });
+  const childConnectionsQuery = useQuery({
+    queryKey: ['family', 'children', childId, 'connections'],
+    queryFn: async () => {
+      const { data } = await api.get<FamilyChildConnectionsResponse>(`/family/children/${childId}/connections`);
+      return data;
     },
     enabled: Boolean(childId),
   });
@@ -240,20 +263,81 @@ export const FamilyChildPage = () => {
 
   return (
     <div className="space-y-6">
+      <Link
+        className="inline-flex rounded-full border border-white/10 px-4 py-2 text-sm text-[#F5F5F5]/85 transition hover:border-[#FF5A2F]/40 hover:bg-[#FF5A2F]/10 hover:text-[#FF5A2F]"
+        to="/family"
+      >
+        Back to family
+      </Link>
       <PageCard title="Child account">
         {childQuery.isLoading ? <p className="text-sm text-[#F5F5F5]/60">Loading child account...</p> : null}
         {childQuery.isError ? <p className="text-sm text-[#FF5A2F]">Could not load child account.</p> : null}
         {childQuery.data ? (
           <div className="space-y-5">
             <div className="rounded-[1.5rem] border border-white/10 bg-white/7 p-5">
-              <p className="font-medium text-[#F5F5F5]">{childQuery.data.displayName}</p>
-              <p className="mt-1 text-sm text-[#F5F5F5]/60">@{childQuery.data.username}</p>
-              <p className="mt-3 text-sm text-[#F5F5F5]/75">{childQuery.data.email}</p>
-              <p className="mt-2 text-xs uppercase tracking-[0.18em] text-[#F5F5F5]/45">
-                Joined {new Date(childQuery.data.createdAt).toLocaleDateString()}
-              </p>
+              <div className="flex items-center gap-4">
+                {childQuery.data.profileImageUrl ? (
+                  <img
+                    alt=""
+                    className="h-16 w-16 rounded-full object-cover"
+                    src={assetUrl(childQuery.data.profileImageUrl) ?? childQuery.data.profileImageUrl}
+                  />
+                ) : (
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/12 text-lg font-semibold text-[#F5F5F5]/65">
+                    {childQuery.data.displayName.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <p className="truncate font-medium text-[#F5F5F5]">{childQuery.data.displayName}</p>
+                  <Link
+                    className="mt-1 block truncate text-sm text-[#F5F5F5]/60 transition hover:text-[#FF5A2F] hover:underline"
+                    to={`/profile/${childQuery.data.username}`}
+                  >
+                    @{childQuery.data.username}
+                  </Link>
+                </div>
+              </div>
               {childQuery.data.bio ? <p className="mt-4 text-sm leading-7 text-[#F5F5F5]/75">{childQuery.data.bio}</p> : null}
             </div>
+            {childConnectionsQuery.data?.pendingApprovals.length ? (
+              <div className="rounded-[1.5rem] border border-[#FF5A2F]/35 bg-[#FF5A2F]/10 p-5">
+                <p className="text-sm font-medium text-[#F5F5F5]">
+                  {childConnectionsQuery.data.pendingApprovals.length} connection approval
+                  {childConnectionsQuery.data.pendingApprovals.length === 1 ? '' : 's'} needed
+                </p>
+                <div className="mt-4 grid gap-3">
+                  {childConnectionsQuery.data.pendingApprovals.map((approval) => (
+                    <Link
+                      key={approval.id}
+                      className="flex items-center gap-3 rounded-[1.25rem] border border-white/10 bg-[#211f1d]/70 p-3 transition hover:border-[#FF5A2F]/35 hover:bg-[#FF5A2F]/10"
+                      to={`/profile/${approval.user.username}`}
+                    >
+                      {approval.user.profileImageUrl ? (
+                        <img
+                          alt=""
+                          className="h-11 w-11 rounded-full object-cover"
+                          src={assetUrl(approval.user.profileImageUrl) ?? approval.user.profileImageUrl}
+                        />
+                      ) : (
+                        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white/12 text-sm font-semibold text-[#F5F5F5]/65">
+                          {approval.user.displayName.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-[#F5F5F5]">{approval.user.displayName}</p>
+                        <p className="truncate text-xs text-[#F5F5F5]/60">@{approval.user.username}</p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+                <Link
+                  className="mt-4 inline-flex rounded-full bg-[#FF5A2F] px-4 py-2 text-sm font-medium text-[#0D0D0D]"
+                  to={`/family/child/${childQuery.data.id}/connections`}
+                >
+                  Review approvals
+                </Link>
+              </div>
+            ) : null}
             <div className="flex flex-wrap gap-3">
               <Link
                 className="rounded-full border border-white/10 px-5 py-3 text-sm font-medium text-[#F5F5F5]/85 transition hover:bg-white/12/5"
@@ -312,6 +396,12 @@ export const FamilyChildMessagesPage = () => {
 
   return (
     <div className="space-y-6">
+      <Link
+        className="inline-flex rounded-full border border-white/10 px-4 py-2 text-sm text-[#F5F5F5]/85 transition hover:border-[#FF5A2F]/40 hover:bg-[#FF5A2F]/10 hover:text-[#FF5A2F]"
+        to={`/family/child/${childId}`}
+      >
+        Back to child account
+      </Link>
       <PageCard title="Child messages">
         {messagesQuery.isLoading ? <p className="text-sm text-[#F5F5F5]/60">Loading child messages...</p> : null}
         {messagesQuery.isError ? <p className="text-sm text-[#FF5A2F]">Could not load messages.</p> : null}
@@ -385,6 +475,7 @@ export const FamilyChildMessagesPage = () => {
 export const FamilyChildConnectionsPage = () => {
   const { childId = '' } = useParams();
   const queryClient = useQueryClient();
+  const [connectionSearch, setConnectionSearch] = useState('');
 
   const connectionsQuery = useQuery({
     queryKey: ['family', 'children', childId, 'connections'],
@@ -418,9 +509,37 @@ export const FamilyChildConnectionsPage = () => {
       ]);
     },
   });
+  const removeConnectionMutation = useMutation({
+    mutationFn: async (connectionId: string) => {
+      await api.delete(`/family/children/${childId}/connections/${connectionId}`);
+    },
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['family', 'children'] }),
+        queryClient.invalidateQueries({ queryKey: ['family', 'children', childId, 'connections'] }),
+        queryClient.invalidateQueries({ queryKey: ['connections'] }),
+        queryClient.invalidateQueries({ queryKey: ['feed'] }),
+      ]);
+    },
+  });
+  const filteredConnections = (connectionsQuery.data?.connections ?? []).filter((connection) => {
+    const term = connectionSearch.trim().toLowerCase();
+
+    if (!term) {
+      return true;
+    }
+
+    return `${connection.user.displayName} ${connection.user.username}`.toLowerCase().includes(term);
+  });
 
   return (
     <div className="space-y-6">
+      <Link
+        className="inline-flex rounded-full border border-white/10 px-4 py-2 text-sm text-[#F5F5F5]/85 transition hover:border-[#FF5A2F]/40 hover:bg-[#FF5A2F]/10 hover:text-[#FF5A2F]"
+        to={`/family/child/${childId}`}
+      >
+        Back to child account
+      </Link>
       <PageCard title="Child connections">
         {connectionsQuery.isLoading ? <p className="text-sm text-[#F5F5F5]/60">Loading child connections...</p> : null}
         {connectionsQuery.isError ? (
@@ -439,14 +558,32 @@ export const FamilyChildConnectionsPage = () => {
                 <div className="grid gap-3">
                   {connectionsQuery.data.pendingApprovals.map((request) => (
                     <div key={request.id} className="rounded-[1.5rem] border border-[#FF5A2F]/35 bg-[#FF5A2F]/10 p-4">
-                      <p className="font-medium text-[#F5F5F5]">{request.user.displayName}</p>
-                      <p className="mt-1 text-sm text-[#F5F5F5]/60">@{request.user.username}</p>
+                      <Link
+                        className="flex items-center gap-3 rounded-[1.25rem] border border-white/10 bg-[#211f1d]/70 p-3 transition hover:border-[#FF5A2F]/35 hover:bg-[#FF5A2F]/10"
+                        to={`/profile/${request.user.username}`}
+                      >
+                        {request.user.profileImageUrl ? (
+                          <img
+                            alt=""
+                            className="h-11 w-11 rounded-full object-cover"
+                            src={assetUrl(request.user.profileImageUrl) ?? request.user.profileImageUrl}
+                          />
+                        ) : (
+                          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white/12 text-sm font-semibold text-[#F5F5F5]/65">
+                            {request.user.displayName.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="truncate font-medium text-[#F5F5F5]">{request.user.displayName}</p>
+                          <p className="mt-1 truncate text-sm text-[#F5F5F5]/60">@{request.user.username}</p>
+                        </div>
+                      </Link>
                       <p className="mt-2 text-xs uppercase tracking-[0.16em] text-[#F5F5F5]/45">
                         Waiting since {new Date(request.createdAt).toLocaleDateString()}
                       </p>
                       <div className="mt-4 flex flex-wrap gap-3">
                         <button
-                          className="rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-[#F5F5F5]/85 disabled:opacity-60"
+                          className="rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-[#F5F5F5]/85 transition hover:border-[#FF5A2F]/40 hover:bg-[#FF5A2F]/10 hover:text-[#FF5A2F] disabled:opacity-60"
                           disabled={approveMutation.isPending || rejectMutation.isPending}
                           onClick={() => approveMutation.mutate(request.id)}
                           type="button"
@@ -454,7 +591,7 @@ export const FamilyChildConnectionsPage = () => {
                           {approveMutation.isPending ? 'Approving...' : 'Approve connection'}
                         </button>
                         <button
-                          className="rounded-full border border-[#FF5A2F]/35 px-4 py-2 text-sm font-medium text-[#FF5A2F] disabled:opacity-60"
+                          className="rounded-full border border-[#FF5A2F]/35 px-4 py-2 text-sm font-medium text-[#FF5A2F] transition hover:bg-[#FF5A2F] hover:text-[#0D0D0D] disabled:opacity-60"
                           disabled={approveMutation.isPending || rejectMutation.isPending}
                           onClick={() => rejectMutation.mutate(request.id)}
                           type="button"
@@ -477,18 +614,51 @@ export const FamilyChildConnectionsPage = () => {
             </section>
             <section className="space-y-3">
               <h3 className="text-sm font-medium uppercase tracking-[0.18em] text-[#F5F5F5]/60">Connected accounts</h3>
+              <input
+                className="w-full rounded-[1.5rem] border border-white/10 bg-[#171514] px-4 py-3 text-sm text-[#F5F5F5] outline-none placeholder:text-[#F5F5F5]/45 focus:border-[#FF5A2F]"
+                onChange={(event) => setConnectionSearch(event.target.value)}
+                placeholder="Search child connections"
+                value={connectionSearch}
+              />
               {connectionsQuery.data.connections.length ? (
                 <div className="grid gap-3 md:grid-cols-2">
-                  {connectionsQuery.data.connections.map((connection) => (
-                    <div key={connection.id} className="rounded-[1.5rem] border border-white/10 p-4">
-                      <p className="font-medium text-[#F5F5F5]">{connection.user.displayName}</p>
-                      <p className="mt-1 text-sm text-[#F5F5F5]/60">@{connection.user.username}</p>
+                  {filteredConnections.map((connection) => (
+                    <div
+                      key={connection.id}
+                      className="rounded-[1.5rem] border border-white/10 p-4 transition hover:border-[#FF5A2F]/35 hover:bg-[#FF5A2F]/10"
+                    >
+                      <Link className="flex items-center gap-3" to={`/profile/${connection.user.username}`}>
+                        {connection.user.profileImageUrl ? (
+                          <img
+                            alt=""
+                            className="h-11 w-11 rounded-full object-cover"
+                            src={assetUrl(connection.user.profileImageUrl) ?? connection.user.profileImageUrl}
+                          />
+                        ) : (
+                          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white/12 text-sm font-semibold text-[#F5F5F5]/65">
+                            {connection.user.displayName.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="truncate font-medium text-[#F5F5F5]">{connection.user.displayName}</p>
+                          <p className="mt-1 truncate text-sm text-[#F5F5F5]/60">@{connection.user.username}</p>
+                        </div>
+                      </Link>
                       {connection.user.isFamilyLinked ? (
                         <p className="mt-2 text-xs uppercase tracking-[0.16em] text-[#F5F5F5]/45">Family-linked account</p>
                       ) : null}
-                      <p className="mt-2 text-xs uppercase tracking-[0.16em] text-[#F5F5F5]/45">
-                        Connected {new Date(connection.createdAt).toLocaleDateString()}
-                      </p>
+                      <button
+                        className="mt-4 rounded-full border border-[#FF5A2F]/35 px-4 py-2 text-sm font-medium text-[#FF5A2F] transition hover:bg-[#FF5A2F] hover:text-[#0D0D0D] disabled:opacity-60"
+                        disabled={removeConnectionMutation.isPending}
+                        onClick={() => {
+                          if (window.confirm(`Remove ${connection.user.displayName} from this child account's connections?`)) {
+                            removeConnectionMutation.mutate(connection.id);
+                          }
+                        }}
+                        type="button"
+                      >
+                        {removeConnectionMutation.isPending ? 'Removing...' : 'Remove connection'}
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -497,6 +667,12 @@ export const FamilyChildConnectionsPage = () => {
                   No connections yet.
                 </div>
               )}
+              {connectionsQuery.data.connections.length > 0 && filteredConnections.length === 0 ? (
+                <p className="text-sm text-[#F5F5F5]/60">No matching connections.</p>
+              ) : null}
+              {removeConnectionMutation.isError ? (
+                <p className="text-sm text-[#FF5A2F]">Could not remove connection.</p>
+              ) : null}
             </section>
           </div>
         ) : null}
@@ -504,6 +680,7 @@ export const FamilyChildConnectionsPage = () => {
     </div>
   );
 };
+
 
 
 

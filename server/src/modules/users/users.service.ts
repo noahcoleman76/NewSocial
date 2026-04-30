@@ -158,9 +158,10 @@ export const usersService = {
     const canDisableAccount = Boolean(isAdminViewer && !isSelf && target.accountStatus === 'ACTIVE');
     const canEnableAccount = Boolean(isAdminViewer && !isSelf && target.accountStatus === 'DISABLED');
     const [userAId, userBId] = normalizeConnectionPair(viewerId, target.id);
-    const [connection, familyRelation, outgoingRequest, incomingRequest] = await Promise.all([
+    const [connection, familyRelation, childConnection, outgoingRequest, incomingRequest] = await Promise.all([
       isSelf ? Promise.resolve(null) : connectionRepository.findConnectionByUsers(userAId, userBId),
       isSelf ? Promise.resolve(null) : connectionRepository.findDirectFamilyRelation(viewerId, target.id),
+      isSelf ? Promise.resolve(null) : connectionRepository.findChildConnectionForManager(viewerId, target.id),
       isSelf ? Promise.resolve(null) : connectionRepository.findRequestByUsers(viewerId, target.id),
       isSelf ? Promise.resolve(null) : connectionRepository.findRequestByUsers(target.id, viewerId),
     ]);
@@ -170,7 +171,7 @@ export const usersService = {
 
     if (isSelf) {
       relationship = 'SELF';
-    } else if (familyRelation || connection?.status === 'ACTIVE') {
+    } else if (familyRelation || childConnection || connection?.status === 'ACTIVE') {
       relationship = 'CONNECTED';
     } else if (connection?.status === 'PENDING_MANAGER_APPROVAL') {
       relationship = 'PENDING_MANAGER_APPROVAL';

@@ -20,5 +20,10 @@ familyRouter.post(
   authRequired,
   asyncHandler(familyController.rejectPendingConnection),
 );
+familyRouter.delete(
+  '/children/:childId/connections/:connectionId',
+  authRequired,
+  asyncHandler(familyController.removeChildConnection),
+);
 familyRouter.post('/children/:childId/release', authRequired, asyncHandler(familyController.releaseChild));
 familyRouter.delete('/children/:childId', authRequired, asyncHandler(familyController.deleteChild));

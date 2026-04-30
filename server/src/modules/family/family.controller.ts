@@ -63,6 +63,14 @@ export const familyController = {
     await familyService.rejectPendingConnection(req.auth.sub, getChildId(req), getConnectionId(req));
     res.status(204).send();
   },
+  removeChildConnection: async (req: Request, res: Response) => {
+    if (!req.auth?.sub) {
+      throw new AppError('UNAUTHORIZED', 'Authentication required', 401);
+    }
+
+    await familyService.removeChildConnection(req.auth.sub, getChildId(req), getConnectionId(req));
+    res.status(204).send();
+  },
 
   getCode: async (req: Request, res: Response) => {
     if (!req.auth?.sub) {

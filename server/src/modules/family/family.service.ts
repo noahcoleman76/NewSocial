@@ -146,6 +146,12 @@ export const familyService = {
       throw new AppError('PENDING_CONNECTION_NOT_FOUND', 'Pending child connection not found', 404);
     }
   },
+  removeChildConnection: async (managerUserId: string, childId: string, connectionId: string) => {
+    const result = await familyRepository.removeChildConnection(managerUserId, childId, connectionId);
+    if (result.count === 0) {
+      throw new AppError('CHILD_CONNECTION_NOT_FOUND', 'Child connection not found', 404);
+    }
+  },
   getFamilyCode: async (managerUserId: string) => {
     const manager = await authRepository.findUserById(managerUserId);
     if (!manager) {
