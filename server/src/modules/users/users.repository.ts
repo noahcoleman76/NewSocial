@@ -57,6 +57,40 @@ export const usersRepository = {
       select: profileUserSelect,
     }),
 
+  findFamilyCodeConversionTarget: (userId: string) =>
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        ...profileUserSelect,
+        email: true,
+        createdAt: true,
+        children: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    }),
+
+  convertToChildAccount: (userId: string, parentId: string) =>
+    prisma.user.update({
+      where: { id: userId },
+      data: {
+        role: 'CHILD',
+        parentId,
+      },
+      select: {
+        ...profileUserSelect,
+        email: true,
+        createdAt: true,
+        children: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    }),
+
   updateProfile: (
     userId: string,
     data: {

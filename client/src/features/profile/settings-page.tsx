@@ -52,6 +52,8 @@ export const SettingsPage = () => {
   const [profileMessage, setProfileMessage] = useState<string | null>(null);
   const [passwordMessage, setPasswordMessage] = useState<string | null>(null);
   const [deleteMessage, setDeleteMessage] = useState<string | null>(null);
+  const [familyCode, setFamilyCode] = useState('');
+  const [familyCodeMessage, setFamilyCodeMessage] = useState<string | null>(null);
 
   const previewUrl = useMemo(() => {
     if (!selectedImage) {
@@ -146,6 +148,28 @@ export const SettingsPage = () => {
     },
   });
 
+  const familyCodeMutation = useMutation({
+    mutationFn: async () => {
+      const { data } = await api.post<UpdateUserResponse>('/users/me/family-code', {
+        familyCode: familyCode.trim(),
+      });
+      return data.user;
+    },
+    onSuccess: async (nextUser) => {
+      setCurrentUser(nextUser);
+      setFamilyCode('');
+      setFamilyCodeMessage('Family linked.');
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['profile'] }),
+        queryClient.invalidateQueries({ queryKey: ['family'] }),
+        queryClient.invalidateQueries({ queryKey: ['connections'] }),
+      ]);
+    },
+    onError: (error) => {
+      setFamilyCodeMessage(readErrorMessage(error, 'Could not apply family code.'));
+    },
+  });
+
   const handleDeleteAccount = (childOutcome?: 'DELETE_CHILDREN' | 'RELEASE_CHILDREN') => {
     const message = childOutcome === 'RELEASE_CHILDREN'
       ? 'Delete your account and release all child accounts into standard accounts? Permanent.'
@@ -186,6 +210,7 @@ export const SettingsPage = () => {
       profileFields.email.trim() ||
       profileFields.bio.trim(),
   );
+  const canApplyFamilyCode = user?.role === 'STANDARD' && !user.hasChildren;
 
   if (!user) {
     return null;
@@ -285,6 +310,41 @@ export const SettingsPage = () => {
           </div>
         </div>
       </PageCard>
+
+      {canApplyFamilyCode ? (
+        <PageCard title="Join family">
+          <form
+            className="space-y-4"
+            onSubmit={(event) => {
+              event.preventDefault();
+              setFamilyCodeMessage(null);
+
+              if (!familyCode.trim()) {
+                return;
+              }
+
+              if (window.confirm('Join this family? Your account will become a child account managed by this family.')) {
+                familyCodeMutation.mutate();
+              }
+            }}
+          >
+            <input
+              className="w-full rounded-2xl border border-white/10 px-4 py-3"
+              onChange={(event) => setFamilyCode(event.target.value)}
+              placeholder="Family code"
+              value={familyCode}
+            />
+            <button
+              className="rounded-full bg-[#FF5A2F] px-5 py-3 text-sm font-medium text-[#0D0D0D] disabled:opacity-60"
+              disabled={!familyCode.trim() || familyCodeMutation.isPending}
+              type="submit"
+            >
+              {familyCodeMutation.isPending ? 'Joining...' : 'Apply code'}
+            </button>
+            {familyCodeMessage ? <p className="text-sm text-[#FF5A2F]">{familyCodeMessage}</p> : null}
+          </form>
+        </PageCard>
+      ) : null}
 
       <PageCard title="Password">
         <div className="space-y-4">

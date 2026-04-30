@@ -4,7 +4,7 @@ import { validate } from '@/lib/validate';
 import { authRequired } from '@/middleware/auth-required';
 import { profileUpload } from '@/modules/uploads/upload.middleware';
 import { usersController } from './users.controller';
-import { deleteAccountSchema, updatePasswordSchema, updateProfileSchema } from './users.schemas';
+import { applyFamilyCodeSchema, deleteAccountSchema, updatePasswordSchema, updateProfileSchema } from './users.schemas';
 
 export const usersRouter = Router();
 
@@ -21,6 +21,12 @@ usersRouter.patch(
   authRequired,
   validate(updatePasswordSchema),
   asyncHandler(usersController.changePassword),
+);
+usersRouter.post(
+  '/me/family-code',
+  authRequired,
+  validate(applyFamilyCodeSchema),
+  asyncHandler(usersController.applyFamilyCode),
 );
 usersRouter.get('/search', authRequired, asyncHandler(usersController.search));
 usersRouter.get('/:username', authRequired, asyncHandler(usersController.getProfile));

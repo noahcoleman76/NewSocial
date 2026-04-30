@@ -5,7 +5,9 @@ import { connectionService } from '@/modules/connections/connection.service';
 import { connectionRepository } from '@/modules/connections/connection.repository';
 import { normalizeConnectionPair } from '@/modules/connections/connection.rules';
 import { toAuthUser } from '@/modules/auth/auth.mapper';
+import { authRepository } from '@/modules/auth/auth.repository';
 import { authService } from '@/modules/auth/auth.service';
+import { accountStateService } from '@/modules/admin/account-state.service';
 import { resolveParentDeletionPlan } from '@/modules/family/family.rules';
 import { usersRepository } from './users.repository';
 
@@ -73,6 +75,35 @@ export const usersService = {
   ) => {
     const result = await authService.changePassword(userId, input);
     return result;
+  },
+
+  applyFamilyCode: async (userId: string, familyCode: string) => {
+    const user = await usersRepository.findFamilyCodeConversionTarget(userId);
+    if (!user) {
+      throw new AppError('USER_NOT_FOUND', 'User not found', 404);
+    }
+
+    if (user.accountStatus !== 'ACTIVE') {
+      throw new AppError('ACCOUNT_DISABLED', 'Account is disabled', 403);
+    }
+
+    if (user.role !== 'STANDARD' || user.parentId || user.children.length > 0) {
+      throw new AppError(
+        'FAMILY_CODE_NOT_ALLOWED',
+        'Only standard accounts that do not manage a family can join a family',
+        403,
+      );
+    }
+
+    const manager = await authRepository.findUserByFamilyCode(familyCode.trim());
+    if (!manager || manager.id === user.id) {
+      throw new AppError('INVALID_FAMILY_CODE', 'Family code is invalid', 404);
+    }
+
+    accountStateService.assertActiveAccount(manager, manager.parent);
+
+    const updatedUser = await usersRepository.convertToChildAccount(user.id, manager.id);
+    return toAuthUser(updatedUser);
   },
 
 

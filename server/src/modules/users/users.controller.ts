@@ -30,6 +30,14 @@ export const usersController = {
     const user = await usersService.updateMe(req.auth.sub, req.body);
     res.json({ user });
   },
+  applyFamilyCode: async (req: Request, res: Response) => {
+    if (!req.auth?.sub) {
+      throw new AppError('UNAUTHORIZED', 'Authentication required', 401);
+    }
+
+    const user = await usersService.applyFamilyCode(req.auth.sub, req.body.familyCode);
+    res.json({ user });
+  },
   updateProfileImage: async (req: Request, res: Response) => {
     if (!req.auth?.sub) {
       throw new AppError('UNAUTHORIZED', 'Authentication required', 401);

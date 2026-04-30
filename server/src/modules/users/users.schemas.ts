@@ -27,3 +27,7 @@ export const updatePasswordSchema = z
 export const deleteAccountSchema = z.object({
   childOutcome: z.enum(['DELETE_CHILDREN', 'RELEASE_CHILDREN']).optional(),
 });
+
+export const applyFamilyCodeSchema = z.object({
+  familyCode: z.string().trim().min(6).max(32),
+});
