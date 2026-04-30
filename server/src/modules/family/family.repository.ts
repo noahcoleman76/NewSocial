@@ -91,7 +91,6 @@ export const familyRepository = {
           orderBy: {
             createdAt: 'desc',
           },
-          take: 10,
           include: {
             images: {
               select: {

@@ -42,6 +42,7 @@ type FamilyMessage = {
   createdAt: string;
   author: FamilyMessageAuthor;
   imageCount: number;
+  imageUrls: string[];
 };
 
 type FamilyMessageConversation = {
@@ -413,23 +414,40 @@ export const FamilyChildMessagesPage = () => {
 
             </div>
             {messagesQuery.data.conversations.length ? (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {messagesQuery.data.conversations.map((conversation) => (
-                  <div key={conversation.id} className="rounded-[1.5rem] border border-white/10 p-5">
+                  <Link
+                    key={conversation.id}
+                    className="block rounded-[1.5rem] border border-white/10 p-5 transition hover:border-[#FF5A2F]/35 hover:bg-[#FF5A2F]/10"
+                    to={`/family/child/${childId}/messages/${conversation.id}`}
+                  >
                     <div className="flex flex-wrap items-center justify-between gap-3">
-                      <div>
-                        <p className="font-medium text-[#F5F5F5]">
-                          {conversation.participant?.displayName ?? 'Deleted User'}
-                        </p>
-                        <p className="mt-1 text-sm text-[#F5F5F5]/60">
-                          {conversation.participant?.deleted
-                            ? 'Deleted user.'
-                            : conversation.participant?.isFamilyLinked
-                              ? `@${conversation.participant.username} · Family-linked account`
-                              : conversation.participant
-                                ? `@${conversation.participant.username}`
-                                : 'Account removed'}
-                        </p>
+                      <div className="flex min-w-0 items-center gap-3">
+                        {conversation.participant?.profileImageUrl ? (
+                          <img
+                            alt=""
+                            className="h-12 w-12 rounded-full object-cover"
+                            src={assetUrl(conversation.participant.profileImageUrl) ?? conversation.participant.profileImageUrl}
+                          />
+                        ) : (
+                          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/12 text-sm font-semibold text-[#F5F5F5]/65">
+                            {(conversation.participant?.displayName ?? 'D').charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="truncate font-medium text-[#F5F5F5]">
+                            {conversation.participant?.displayName ?? 'Deleted User'}
+                          </p>
+                          <p className="mt-1 truncate text-sm text-[#F5F5F5]/60">
+                            {conversation.participant?.deleted
+                              ? 'Deleted user.'
+                              : conversation.participant?.isFamilyLinked
+                                ? `@${conversation.participant.username} · Family-linked account`
+                                : conversation.participant
+                                  ? `@${conversation.participant.username}`
+                                  : 'Account removed'}
+                          </p>
+                        </div>
                       </div>
                       {conversation.unread ? (
                         <span className="rounded-full bg-[#FF5A2F] px-3 py-1 text-xs uppercase tracking-[0.16em] text-[#0D0D0D]">
@@ -437,27 +455,11 @@ export const FamilyChildMessagesPage = () => {
                         </span>
                       ) : null}
                     </div>
-                    <div className="mt-4 space-y-3">
-                      {conversation.messages.map((message) => (
-                        <div key={message.id} className="rounded-[1.25rem] border border-white/10 bg-white/7 p-4">
-                          <div className="flex flex-wrap items-center justify-between gap-3">
-                            <p className="text-sm font-medium text-[#F5F5F5]/85">{message.author.name}</p>
-                            <p className="text-xs uppercase tracking-[0.16em] text-[#F5F5F5]/45">
-                              {new Date(message.createdAt).toLocaleString()}
-                            </p>
-                          </div>
-                          <p className="mt-2 text-sm leading-7 text-[#F5F5F5]/75">
-                            {message.body ?? 'Image-only message'}
-                          </p>
-                          {message.imageCount > 0 ? (
-                            <p className="mt-2 text-xs uppercase tracking-[0.16em] text-[#F5F5F5]/45">
-                              {message.imageCount} image{message.imageCount === 1 ? '' : 's'}
-                            </p>
-                          ) : null}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                    <p className="mt-3 truncate text-sm text-[#F5F5F5]/60">
+                      {conversation.messages.at(-1)?.body ??
+                        (conversation.messages.at(-1)?.imageCount ? 'Image message' : 'No messages yet.')}
+                    </p>
+                  </Link>
                 ))}
               </div>
             ) : (
@@ -469,6 +471,94 @@ export const FamilyChildMessagesPage = () => {
         ) : null}
       </PageCard>
     </div>
+  );
+};
+
+export const FamilyChildConversationPage = () => {
+  const { childId = '', conversationId = '' } = useParams();
+
+  const messagesQuery = useQuery({
+    queryKey: ['family', 'children', childId, 'messages'],
+    queryFn: async () => {
+      const { data } = await api.get<FamilyChildMessagesResponse>(`/family/children/${childId}/messages`);
+      return data;
+    },
+    enabled: Boolean(childId),
+  });
+
+  const conversation = messagesQuery.data?.conversations.find((entry) => entry.id === conversationId);
+  const participant = conversation?.participant;
+
+  return (
+    <section className="overflow-hidden rounded-[2rem] border border-white/10 bg-[#211f1d]/92 shadow-[0_24px_90px_-60px_rgba(255,90,47,0.42)]">
+      <div className="sticky top-0 z-20 flex items-center gap-4 border-b border-white/10 bg-[#211f1d]/95 px-4 py-4 shadow-[0_18px_35px_-30px_rgba(0,0,0,0.85)] backdrop-blur">
+        <Link
+          className="rounded-full border border-white/10 px-3 py-2 text-sm text-[#F5F5F5]/80 transition hover:border-[#FF5A2F]/40 hover:bg-[#FF5A2F]/10 hover:text-[#FF5A2F]"
+          to={`/family/child/${childId}/messages`}
+        >
+          Back
+        </Link>
+        <div className="min-w-0">
+          {participant ? (
+            <Link
+              className="block truncate text-base font-semibold text-[#F5F5F5] transition hover:text-[#FF5A2F] hover:underline"
+              to={`/profile/${participant.username}`}
+            >
+              @{participant.username}
+            </Link>
+          ) : (
+            <p className="truncate text-base font-semibold text-[#F5F5F5]">Deleted User</p>
+          )}
+          <p className="truncate text-sm text-[#F5F5F5]/55">
+            {participant?.displayName ?? 'Account removed'} and {messagesQuery.data?.child.displayName ?? 'child account'}
+          </p>
+        </div>
+      </div>
+
+      {messagesQuery.isLoading ? <p className="p-4 text-sm text-[#F5F5F5]/60">Loading conversation...</p> : null}
+      {messagesQuery.isError ? <p className="p-4 text-sm text-[#FF5A2F]">Could not load conversation.</p> : null}
+      {messagesQuery.data && !conversation ? (
+        <p className="p-4 text-sm text-[#F5F5F5]/60">Conversation not found.</p>
+      ) : null}
+      {conversation ? (
+        <div className="min-h-[58vh] space-y-2 px-4 py-5">
+          {conversation.messages.map((message) => {
+            const isChildMessage = message.author.id === childId;
+
+            return (
+              <div key={message.id} className={`flex ${isChildMessage ? 'justify-end' : 'justify-start'}`}>
+                <div
+                  className={`max-w-[75%] rounded-[1.35rem] px-3 py-2 text-sm leading-6 shadow-[0_14px_38px_-30px_rgba(0,0,0,0.9)] ${
+                    isChildMessage
+                      ? 'rounded-br-md bg-[#E4572E] text-white'
+                      : 'rounded-bl-md bg-white/10 text-[#F5F5F5]'
+                  }`}
+                  title={new Date(message.createdAt).toLocaleString()}
+                >
+                  {message.imageUrls.length ? (
+                    <div className="grid gap-2">
+                      {message.imageUrls.map((imageUrl) => (
+                        <img
+                          key={imageUrl}
+                          alt=""
+                          className="max-h-80 w-full rounded-[1rem] object-contain"
+                          src={assetUrl(imageUrl) ?? imageUrl}
+                        />
+                      ))}
+                    </div>
+                  ) : null}
+                  {message.body ? (
+                    <p className={message.imageUrls.length ? 'mt-2 whitespace-pre-wrap' : 'whitespace-pre-wrap'}>
+                      {message.body}
+                    </p>
+                  ) : null}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : null}
+    </section>
   );
 };
 

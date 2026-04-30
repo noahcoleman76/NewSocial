@@ -10,7 +10,13 @@ import { ProfilePage } from '@/features/profile/page';
 import { SettingsPage } from '@/features/profile/settings-page';
 import { ConnectionsPage } from '@/features/connections/page';
 import { PostPage } from '@/features/posts/post-page';
-import { FamilyPage, FamilyChildPage, FamilyChildMessagesPage, FamilyChildConnectionsPage } from '@/features/family/pages';
+import {
+  FamilyPage,
+  FamilyChildPage,
+  FamilyChildMessagesPage,
+  FamilyChildConversationPage,
+  FamilyChildConnectionsPage,
+} from '@/features/family/pages';
 import { AdminHomePage, AdminReportsPage, AdminUsersPage, AdminAuditPage } from '@/features/admin/pages';
 
 export const router = createBrowserRouter([
@@ -49,6 +55,7 @@ export const router = createBrowserRouter([
           { path: '/family', element: <FamilyPage /> },
           { path: '/family/child/:childId', element: <FamilyChildPage /> },
           { path: '/family/child/:childId/messages', element: <FamilyChildMessagesPage /> },
+          { path: '/family/child/:childId/messages/:conversationId', element: <FamilyChildConversationPage /> },
           { path: '/family/child/:childId/connections', element: <FamilyChildConnectionsPage /> },
         ],
       },

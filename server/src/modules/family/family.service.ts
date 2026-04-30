@@ -89,6 +89,7 @@ export const familyService = {
                     : (message.senderSnapshotName ?? 'Deleted User'),
               },
               imageCount: message.images.length,
+              imageUrls: message.images.map((image) => image.imageUrl),
             })),
         };
       }),
