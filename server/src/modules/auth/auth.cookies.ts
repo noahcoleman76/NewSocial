@@ -3,13 +3,17 @@ import { env } from '@/config/env';
 import { durationToMs } from '@/utils/duration';
 import { REFRESH_COOKIE_NAME } from './auth.constants';
 
-const baseCookieOptions = (): CookieOptions => ({
-  httpOnly: true,
-  secure: env.NODE_ENV === 'production',
-  sameSite: 'lax',
-  domain: env.NODE_ENV === 'production' ? env.COOKIE_DOMAIN : undefined,
-  path: '/',
-});
+const baseCookieOptions = (): CookieOptions => {
+  const isProduction = env.NODE_ENV === 'production';
+
+  return {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
+    domain: isProduction && env.COOKIE_DOMAIN ? env.COOKIE_DOMAIN : undefined,
+    path: '/',
+  };
+};
 
 export const setRefreshCookie = (res: Response, token: string) => {
   res.cookie(REFRESH_COOKIE_NAME, token, {

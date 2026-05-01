@@ -49,7 +49,7 @@ const clearStoredChildToken = () => window.sessionStorage.removeItem(CHILD_TOKEN
 const getErrorMessage = (error: unknown) => {
   if (error instanceof AxiosError) {
     if (error.code === 'ERR_NETWORK') {
-      return 'The server is unavailable. Start the backend on http://localhost:4000 and try again.';
+      return 'The server is unavailable. Please try again shortly.';
     }
 
     return (
