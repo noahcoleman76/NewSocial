@@ -1,15 +1,19 @@
-import dotenv from 'dotenv';
-import path from 'node:path';
 import { z } from 'zod';
 
-dotenv.config({
-  path: path.resolve(process.cwd(), '../.env'),
-});
+if (process.env.NODE_ENV !== 'production') {
+  const [{ default: dotenv }, { default: path }] = await Promise.all([
+    import('dotenv'),
+    import('node:path'),
+  ]);
 
-dotenv.config({
-  path: path.resolve(process.cwd(), '.env'),
-  override: true,
-});
+  dotenv.config({
+    path: path.resolve(process.cwd(), '../.env'),
+  });
+
+  dotenv.config({
+    path: path.resolve(process.cwd(), '.env'),
+  });
+}
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
