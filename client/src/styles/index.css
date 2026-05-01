@@ -28,7 +28,7 @@ body {
   min-height: 100vh;
 }
 
-input,
+input:not([data-unstyled='true']),
 textarea,
 select {
   background: var(--color-surface) !important;
@@ -36,7 +36,7 @@ select {
   color: var(--color-text) !important;
 }
 
-input::placeholder,
+input:not([data-unstyled='true'])::placeholder,
 textarea::placeholder {
   color: rgba(245, 245, 245, 0.42) !important;
 }
@@ -45,4 +45,3 @@ button,
 a {
   outline-color: var(--color-accent);
 }
-

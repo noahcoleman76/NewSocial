@@ -157,10 +157,13 @@ export const PostPage = () => {
   return (
     <div className="space-y-4">
       <button
-        className="rounded-full border border-white/10 px-4 py-2 text-sm font-medium text-[#F5F5F5]/85 hover:bg-white/12/5"
+        className="inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-sm font-medium text-[#F5F5F5]/85 hover:bg-white/12/5"
         onClick={handleBack}
         type="button"
       >
+        <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.9" viewBox="0 0 24 24">
+          <path d="m15 18-6-6 6-6" />
+        </svg>
         Back to feed
       </button>
       <PageCard title="Post">
@@ -290,7 +293,6 @@ export const PostPage = () => {
     </div>
   );
 };
-
 
 
 

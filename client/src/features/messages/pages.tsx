@@ -71,6 +71,22 @@ const summaryLabel = (participant: ConversationParticipant | null) => {
   return participant.displayName;
 };
 
+const summaryMeta = (participant: ConversationParticipant | null) => {
+  if (!participant) {
+    return 'Account removed';
+  }
+
+  if (participant.deleted) {
+    return 'Deleted user.';
+  }
+
+  if (participant.isFamilyLinked) {
+    return `@${participant.username} · Family-linked account`;
+  }
+
+  return `@${participant.username}`;
+};
+
 const useMessageRealtime = (conversationId?: string) => {
   const queryClient = useQueryClient();
   const accessToken = useAuthStore((state) => state.accessToken);
@@ -139,18 +155,34 @@ export const MessagesPage = () => {
               className="block rounded-[1.5rem] border border-white/10 p-4 transition hover:bg-white/12/5"
               to={`/messages/${conversation.id}`}
             >
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="font-medium">{summaryLabel(conversation.participant)}</p>
-                  <p className="mt-1 text-xs uppercase tracking-[0.16em] text-[#F5F5F5]/45">
-                    {new Date(conversation.updatedAt).toLocaleString()}
-                  </p>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex min-w-0 items-center gap-3">
+                  {conversation.participant?.profileImageUrl ? (
+                    <img
+                      alt=""
+                      className="h-12 w-12 rounded-full object-cover"
+                      src={assetUrl(conversation.participant.profileImageUrl) ?? conversation.participant.profileImageUrl}
+                    />
+                  ) : (
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/12 text-sm font-semibold text-[#F5F5F5]/65">
+                      {summaryLabel(conversation.participant).charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <p className="truncate font-medium text-[#F5F5F5]">{summaryLabel(conversation.participant)}</p>
+                    <p className="mt-1 truncate text-sm text-[#F5F5F5]/60">{summaryMeta(conversation.participant)}</p>
+                  </div>
                 </div>
-                {conversation.unread ? (
-                  <span className="rounded-full bg-[#FF5A2F] px-2 py-1 text-xs text-[#0D0D0D]">Unread</span>
-                ) : null}
+                <span
+                  className={`rounded-full px-3 py-1 text-xs uppercase tracking-[0.16em] ${
+                    conversation.unread
+                      ? 'bg-[#FF5A2F] text-[#0D0D0D]'
+                      : 'border border-white/10 text-[#F5F5F5]/60'
+                  }`}
+                >
+                  {conversation.unread ? 'Unread' : 'Read'}
+                </span>
               </div>
-              <p className="mt-3 text-sm text-[#F5F5F5]/60">{conversation.preview}</p>
             </Link>
           ))}
         </div>
@@ -343,15 +375,40 @@ export const ConversationPage = () => {
     <section className="overflow-hidden rounded-[2rem] border border-white/10 bg-[#211f1d]/92 shadow-[0_24px_90px_-60px_rgba(255,90,47,0.42)]">
       <div className="sticky top-0 z-20 flex items-center gap-4 border-b border-white/10 bg-[#211f1d]/95 px-4 py-4 shadow-[0_18px_35px_-30px_rgba(0,0,0,0.85)] backdrop-blur">
         <Link
-          className="rounded-full border border-white/10 px-3 py-2 text-sm text-[#F5F5F5]/80 transition hover:border-[#FF5A2F]/40 hover:bg-[#FF5A2F]/10 hover:text-[#FF5A2F]"
+          className="inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-2 text-sm text-[#F5F5F5]/80 transition hover:border-[#FF5A2F]/40 hover:bg-[#FF5A2F]/10 hover:text-[#FF5A2F]"
           to="/messages"
         >
+          <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.9" viewBox="0 0 24 24">
+            <path d="m15 18-6-6 6-6" />
+          </svg>
           Inbox
         </Link>
-        <div className="min-w-0">
-          <p className="truncate text-base font-semibold text-[#F5F5F5]">{recipientLabel}</p>
-          {participant ? <p className="truncate text-sm text-[#F5F5F5]/55">{participant.displayName}</p> : null}
-        </div>
+        {participant ? (
+          <Link
+            className="flex min-w-0 items-center gap-3 rounded-[1.25rem] px-2 py-1 transition hover:bg-white/5"
+            to={`/profile/${participant.username}`}
+          >
+            {participant.profileImageUrl ? (
+              <img
+                alt=""
+                className="h-11 w-11 rounded-full object-cover"
+                src={assetUrl(participant.profileImageUrl) ?? participant.profileImageUrl}
+              />
+            ) : (
+              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white/12 text-sm font-semibold text-[#F5F5F5]/65">
+                {participant.displayName.charAt(0).toUpperCase()}
+              </div>
+            )}
+            <div className="min-w-0">
+              <p className="truncate text-base font-semibold text-[#F5F5F5]">{participant.displayName}</p>
+              <p className="truncate text-sm text-[#F5F5F5]/55">{recipientLabel}</p>
+            </div>
+          </Link>
+        ) : (
+          <div className="min-w-0">
+            <p className="truncate text-base font-semibold text-[#F5F5F5]">{recipientLabel}</p>
+          </div>
+        )}
       </div>
 
       {conversationQuery.isLoading ? <p className="p-4 text-sm text-[#F5F5F5]/60">Loading conversation...</p> : null}
@@ -426,7 +483,8 @@ export const ConversationPage = () => {
                 />
               </label>
               <input
-                className="min-w-0 flex-1 bg-transparent px-2 text-sm text-[#F5F5F5] outline-none placeholder:text-[#F5F5F5]/45"
+                className="min-w-0 flex-1 appearance-none border-0 bg-transparent px-2 text-sm text-[#F5F5F5] outline-none ring-0 shadow-none placeholder:text-[#F5F5F5]/45"
+                data-unstyled="true"
                 maxLength={1000}
                 onChange={(event) => setBody(event.target.value)}
                 placeholder="Message"
@@ -452,12 +510,6 @@ export const ConversationPage = () => {
     </section>
   );
 };
-
-
-
-
-
-
 
 
 

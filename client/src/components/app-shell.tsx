@@ -4,7 +4,7 @@ import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/app/auth-store';
 import { useNotifications } from '@/features/notifications/use-notifications';
 import { getMessageSocket } from '@/features/messages/socket';
-import { api } from '@/lib/api';
+import { api, assetUrl } from '@/lib/api';
 import logoMain from '@/assets/logo-main.png';
 
 type NavIconName = 'feed' | 'search' | 'messages' | 'notifications' | 'connections' | 'settings' | 'family' | 'admin';
@@ -137,9 +137,22 @@ export const AppShell = () => {
         <aside className="rounded-[2rem] border border-white/10 bg-[#211f1d]/92 p-4 shadow-[0_24px_90px_-60px_rgba(255,90,47,0.42)] backdrop-blur lg:sticky lg:top-6 lg:h-[calc(100vh-3rem)] lg:overflow-y-auto">
           <div className="mb-8">
             <img alt="NewSocial" className="h-auto max-h-12 w-auto max-w-[180px] object-contain" src={logoMain} />
-            <Link className="block" to={user ? `/profile/${user.username}` : '/feed'}>
-              <h1 className="mt-2 text-2xl font-semibold">{user?.displayName ?? 'Private network'}</h1>
-              <p className="mt-1 text-sm text-[#F5F5F5]/60">@{user?.username}</p>
+            <Link className="mt-3 flex items-center gap-3 rounded-[1.5rem] transition hover:bg-white/5" to={user ? `/profile/${user.username}` : '/feed'}>
+              {user?.profileImageUrl ? (
+                <img
+                  alt=""
+                  className="h-12 w-12 rounded-full object-cover"
+                  src={assetUrl(user.profileImageUrl) ?? user.profileImageUrl}
+                />
+              ) : (
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/12 text-sm font-semibold text-[#F5F5F5]/65">
+                  {(user?.displayName ?? 'P').charAt(0).toUpperCase()}
+                </div>
+              )}
+              <div className="min-w-0">
+                <h1 className="truncate text-2xl font-semibold">{user?.displayName ?? 'Private network'}</h1>
+                <p className="mt-1 truncate text-sm text-[#F5F5F5]/60">@{user?.username}</p>
+              </div>
             </Link>
           </div>
           <nav aria-label="Primary" className="flex flex-wrap gap-2 lg:flex-col">
@@ -180,5 +193,4 @@ export const AppShell = () => {
     </div>
   );
 };
-
 

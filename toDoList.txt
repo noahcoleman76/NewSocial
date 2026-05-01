@@ -1,5 +1,3 @@
 figure out images
 allow easy color changes
-back button icon
 move logout button
-DM Message input formatting

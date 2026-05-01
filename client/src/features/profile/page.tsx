@@ -261,7 +261,9 @@ export const ProfilePage = () => {
                     <p className="text-xs uppercase tracking-[0.16em] text-[#FF5A2F]">Disabled account</p>
                   ) : null}
                 </div>
-                <p className="max-w-2xl text-sm leading-7 text-[#F5F5F5]/75">{profile.bio || 'No bio.'}</p>
+                <p className="max-w-2xl whitespace-pre-wrap text-sm leading-7 text-[#F5F5F5]/75">
+                  {profile.bio || 'No bio.'}
+                </p>
               </div>
             </div>
             {!profile.isSelf ? (
@@ -480,7 +482,6 @@ export const ProfilePage = () => {
     </div>
   );
 };
-
 
 
 

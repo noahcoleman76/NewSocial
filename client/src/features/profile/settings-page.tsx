@@ -1,5 +1,6 @@
 ﻿import { useMemo, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { AxiosError } from 'axios';
 import { useAuthStore } from '@/app/auth-store';
 import { PageCard } from '@/components/page-card';
@@ -30,6 +31,7 @@ const readErrorMessage = (error: unknown, fallback: string) =>
     : fallback;
 
 export const SettingsPage = () => {
+  const bioMaxLength = 250;
   const queryClient = useQueryClient();
   const user = useAuthStore((state) => state.currentUser);
   const setCurrentUser = useAuthStore((state) => state.setCurrentUser);
@@ -63,6 +65,19 @@ export const SettingsPage = () => {
     return URL.createObjectURL(selectedImage);
   }, [selectedImage, user?.profileImageUrl]);
 
+  useEffect(() => {
+    if (!user) {
+      return;
+    }
+
+    setProfileFields({
+      displayName: user.displayName,
+      username: user.username,
+      email: user.email,
+      bio: user.bio ?? '',
+    });
+  }, [user]);
+
   const profileMutation = useMutation({
     mutationFn: async () => {
       const payload: Record<string, string | null> = {};
@@ -79,8 +94,8 @@ export const SettingsPage = () => {
         payload.email = profileFields.email.trim().toLowerCase();
       }
 
-      if (profileFields.bio.trim()) {
-        payload.bio = profileFields.bio.trim();
+      if (profileFields.bio.trim() !== (user?.bio ?? '')) {
+        payload.bio = profileFields.bio.trim() || null;
       }
 
       const { data } = await api.patch<UpdateUserResponse>('/users/me', payload);
@@ -88,7 +103,12 @@ export const SettingsPage = () => {
     },
     onSuccess: async (nextUser) => {
       setCurrentUser(nextUser);
-      setProfileFields({ displayName: '', username: '', email: '', bio: '' });
+      setProfileFields({
+        displayName: nextUser.displayName,
+        username: nextUser.username,
+        email: nextUser.email,
+        bio: nextUser.bio ?? '',
+      });
       setProfileMessage('Profile saved.');
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['profile'] }),
@@ -204,17 +224,17 @@ export const SettingsPage = () => {
     },
   });
 
-  const canSaveProfile = Boolean(
-    profileFields.displayName.trim() ||
-      profileFields.username.trim() ||
-      profileFields.email.trim() ||
-      profileFields.bio.trim(),
-  );
   const canApplyFamilyCode = user?.role === 'STANDARD' && !user.hasChildren;
 
   if (!user) {
     return null;
   }
+
+  const canSaveProfile =
+    profileFields.displayName.trim() !== user.displayName ||
+    profileFields.username.trim().toLowerCase() !== user.username ||
+    profileFields.email.trim().toLowerCase() !== user.email ||
+    profileFields.bio.trim() !== (user.bio ?? '');
 
   return (
     <div className="space-y-6">
@@ -264,34 +284,51 @@ export const SettingsPage = () => {
                 }
               }}
             >
-              <input
-                className="rounded-2xl border border-white/10 px-4 py-3"
-                onChange={(event) => setProfileFields((current) => ({ ...current, displayName: event.target.value }))}
-                placeholder={user.displayName}
-                value={profileFields.displayName}
-              />
-              <input
-                className="rounded-2xl border border-white/10 px-4 py-3"
-                onChange={(event) => setProfileFields((current) => ({ ...current, username: event.target.value }))}
-                placeholder={user.username}
-                value={profileFields.username}
-              />
-              <input
-                className="rounded-2xl border border-white/10 px-4 py-3"
-                onChange={(event) => setProfileFields((current) => ({ ...current, email: event.target.value }))}
-                placeholder={user.email}
-                type="email"
-                value={profileFields.email}
-              />
-              <div className="rounded-2xl border border-white/10 px-4 py-3 text-sm text-[#F5F5F5]/60">
-                {user.role === 'CHILD' ? 'Child account' : user.hasChildren ? 'Managing family' : 'Standard account'}
-              </div>
-              <textarea
-                className="min-h-28 rounded-[1.5rem] border border-white/10 px-4 py-3 md:col-span-2"
-                onChange={(event) => setProfileFields((current) => ({ ...current, bio: event.target.value }))}
-                placeholder={user.bio ?? 'Add a short bio'}
-                value={profileFields.bio}
-              />
+              <label className="space-y-2">
+                <span className="block text-xs font-medium uppercase tracking-[0.16em] text-[#F5F5F5]/60">
+                  Display Name
+                </span>
+                <input
+                  className="w-full rounded-2xl border border-white/10 px-4 py-3"
+                  onChange={(event) => setProfileFields((current) => ({ ...current, displayName: event.target.value }))}
+                  value={profileFields.displayName}
+                />
+              </label>
+              <label className="space-y-2">
+                <span className="block text-xs font-medium uppercase tracking-[0.16em] text-[#F5F5F5]/60">
+                  Username
+                </span>
+                <input
+                  className="w-full rounded-2xl border border-white/10 px-4 py-3"
+                  onChange={(event) => setProfileFields((current) => ({ ...current, username: event.target.value }))}
+                  value={profileFields.username}
+                />
+              </label>
+              <label className="space-y-2">
+                <span className="block text-xs font-medium uppercase tracking-[0.16em] text-[#F5F5F5]/60">
+                  Email
+                </span>
+                <input
+                  className="w-full rounded-2xl border border-white/10 px-4 py-3"
+                  onChange={(event) => setProfileFields((current) => ({ ...current, email: event.target.value }))}
+                  type="email"
+                  value={profileFields.email}
+                />
+              </label>
+              <label className="space-y-2 md:col-span-2">
+                <span className="block text-xs font-medium uppercase tracking-[0.16em] text-[#F5F5F5]/60">
+                  Bio
+                </span>
+                <textarea
+                  className="h-32 w-full resize-none rounded-[1.5rem] border border-white/10 px-4 py-3"
+                  maxLength={bioMaxLength}
+                  onChange={(event) => setProfileFields((current) => ({ ...current, bio: event.target.value }))}
+                  value={profileFields.bio}
+                />
+                <p className="text-right text-xs text-[#F5F5F5]/50">
+                  {profileFields.bio.length}/{bioMaxLength}
+                </p>
+              </label>
               <div className="md:col-span-2">
                 <button
                   className="rounded-full bg-[#FF5A2F] px-5 py-3 text-sm font-medium text-[#0D0D0D] disabled:opacity-60"
@@ -464,11 +501,6 @@ export const SettingsPage = () => {
     </div>
   );
 };
-
-
-
-
-
 
 
 

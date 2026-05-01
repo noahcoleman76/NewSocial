@@ -265,9 +265,12 @@ export const FamilyChildPage = () => {
   return (
     <div className="space-y-6">
       <Link
-        className="inline-flex rounded-full border border-white/10 px-4 py-2 text-sm text-[#F5F5F5]/85 transition hover:border-[#FF5A2F]/40 hover:bg-[#FF5A2F]/10 hover:text-[#FF5A2F]"
+        className="inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-sm text-[#F5F5F5]/85 transition hover:border-[#FF5A2F]/40 hover:bg-[#FF5A2F]/10 hover:text-[#FF5A2F]"
         to="/family"
       >
+        <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.9" viewBox="0 0 24 24">
+          <path d="m15 18-6-6 6-6" />
+        </svg>
         Back to family
       </Link>
       <PageCard title="Child account">
@@ -398,9 +401,12 @@ export const FamilyChildMessagesPage = () => {
   return (
     <div className="space-y-6">
       <Link
-        className="inline-flex rounded-full border border-white/10 px-4 py-2 text-sm text-[#F5F5F5]/85 transition hover:border-[#FF5A2F]/40 hover:bg-[#FF5A2F]/10 hover:text-[#FF5A2F]"
+        className="inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-sm text-[#F5F5F5]/85 transition hover:border-[#FF5A2F]/40 hover:bg-[#FF5A2F]/10 hover:text-[#FF5A2F]"
         to={`/family/child/${childId}`}
       >
+        <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.9" viewBox="0 0 24 24">
+          <path d="m15 18-6-6 6-6" />
+        </svg>
         Back to child account
       </Link>
       <PageCard title="Child messages">
@@ -493,9 +499,12 @@ export const FamilyChildConversationPage = () => {
     <section className="overflow-hidden rounded-[2rem] border border-white/10 bg-[#211f1d]/92 shadow-[0_24px_90px_-60px_rgba(255,90,47,0.42)]">
       <div className="sticky top-0 z-20 flex items-center gap-4 border-b border-white/10 bg-[#211f1d]/95 px-4 py-4 shadow-[0_18px_35px_-30px_rgba(0,0,0,0.85)] backdrop-blur">
         <Link
-          className="rounded-full border border-white/10 px-3 py-2 text-sm text-[#F5F5F5]/80 transition hover:border-[#FF5A2F]/40 hover:bg-[#FF5A2F]/10 hover:text-[#FF5A2F]"
+          className="inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-2 text-sm text-[#F5F5F5]/80 transition hover:border-[#FF5A2F]/40 hover:bg-[#FF5A2F]/10 hover:text-[#FF5A2F]"
           to={`/family/child/${childId}/messages`}
         >
+          <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.9" viewBox="0 0 24 24">
+            <path d="m15 18-6-6 6-6" />
+          </svg>
           Back
         </Link>
         <div className="min-w-0">
@@ -625,9 +634,12 @@ export const FamilyChildConnectionsPage = () => {
   return (
     <div className="space-y-6">
       <Link
-        className="inline-flex rounded-full border border-white/10 px-4 py-2 text-sm text-[#F5F5F5]/85 transition hover:border-[#FF5A2F]/40 hover:bg-[#FF5A2F]/10 hover:text-[#FF5A2F]"
+        className="inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-sm text-[#F5F5F5]/85 transition hover:border-[#FF5A2F]/40 hover:bg-[#FF5A2F]/10 hover:text-[#FF5A2F]"
         to={`/family/child/${childId}`}
       >
+        <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.9" viewBox="0 0 24 24">
+          <path d="m15 18-6-6 6-6" />
+        </svg>
         Back to child account
       </Link>
       <PageCard title="Child connections">
@@ -770,7 +782,6 @@ export const FamilyChildConnectionsPage = () => {
     </div>
   );
 };
-
 
 
 
