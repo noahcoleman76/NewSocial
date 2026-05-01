@@ -1,3 +1,10 @@
-figure out images
-allow easy color changes
 move logout button
+logo on login and signup
+terms and conditioin
+
+Server
+Database
+Email system
+Figure out images
+Social media home page
+terms and conditions on social media page

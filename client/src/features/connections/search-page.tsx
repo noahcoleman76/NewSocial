@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, assetUrl } from '@/lib/api';
@@ -10,7 +10,7 @@ type SearchUsersResponse = {
 };
 
 const inputClass =
-  'w-full rounded-2xl border border-white/10 px-4 py-3 outline-none transition focus:border-[#FF5A2F]';
+  'w-full rounded-2xl border border-white/10 px-4 py-3 outline-none transition focus:border-[var(--accent)]';
 
 const relationshipLabel = (relationship: SearchUser['relationship']) => {
   switch (relationship) {
@@ -101,12 +101,12 @@ export const SearchPage = () => {
       />
       <div className="mt-4 space-y-3">
         {!debouncedQuery ? (
-          <p className="text-sm text-[#F5F5F5]/60">Search by name or username.</p>
+          <p className="text-sm text-[var(--text)]/60">Search by name or username.</p>
         ) : null}
-        {searchQuery.isLoading ? <p className="text-sm text-[#F5F5F5]/60">Searching...</p> : null}
-        {searchQuery.isError ? <p className="text-sm text-[#FF5A2F]">Could not search.</p> : null}
+        {searchQuery.isLoading ? <p className="text-sm text-[var(--text)]/60">Searching...</p> : null}
+        {searchQuery.isError ? <p className="text-sm text-[var(--accent)]">Could not search.</p> : null}
         {searchQuery.data?.length === 0 ? (
-          <div className="rounded-[1.5rem] border border-dashed border-white/15 bg-white/7 p-5 text-sm text-[#F5F5F5]/75">
+          <div className="rounded-[1.5rem] border border-dashed border-white/15 bg-white/7 p-5 text-sm text-[var(--text)]/75">
             No matches.
           </div>
         ) : null}
@@ -120,25 +120,25 @@ export const SearchPage = () => {
                   src={assetUrl(user.profileImageUrl) ?? user.profileImageUrl}
                 />
               ) : (
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/12 text-sm font-semibold text-[#F5F5F5]/65">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/12 text-sm font-semibold text-[var(--text)]/65">
                   {user.displayName.charAt(0).toUpperCase()}
                 </div>
               )}
               <div className="min-w-0">
-                <Link className="block truncate font-medium text-[#F5F5F5] hover:underline" to={`/profile/${user.username}`}>
+                <Link className="block truncate font-medium text-[var(--text)] hover:underline" to={`/profile/${user.username}`}>
                   {user.displayName}
                 </Link>
-                <p className="truncate text-sm text-[#F5F5F5]/60">@{user.username}</p>
+                <p className="truncate text-sm text-[var(--text)]/60">@{user.username}</p>
               </div>
               {user.relationship === 'PENDING_MANAGER_APPROVAL' ? (
-                <p className="mt-2 text-sm text-[#F5F5F5]/60">
+                <p className="mt-2 text-sm text-[var(--text)]/60">
                   Waiting for family approval.
                 </p>
               ) : null}
             </div>
             {user.relationship === 'INCOMING_REQUEST' && user.requestId ? (
               <button
-                className="rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-[#F5F5F5]/85 disabled:opacity-60"
+                className="rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-[var(--text)]/85 disabled:opacity-60"
                 disabled={busy}
                 onClick={() => acceptRequestMutation.mutate(user.requestId!)}
                 type="button"
@@ -148,7 +148,7 @@ export const SearchPage = () => {
             ) : null}
             {user.relationship === 'OUTGOING_REQUEST' && user.requestId ? (
               <button
-                className="rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-[#F5F5F5]/85 disabled:opacity-60"
+                className="rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-[var(--text)]/85 disabled:opacity-60"
                 disabled={busy}
                 onClick={() => cancelRequestMutation.mutate(user.requestId!)}
                 type="button"
@@ -158,7 +158,7 @@ export const SearchPage = () => {
             ) : null}
             {user.relationship === 'NONE' ? (
               <button
-                className="rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-[#F5F5F5]/85 disabled:opacity-60"
+                className="rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-[var(--text)]/85 disabled:opacity-60"
                 disabled={busy}
                 onClick={() => sendRequestMutation.mutate(user.id)}
                 type="button"
@@ -167,12 +167,12 @@ export const SearchPage = () => {
               </button>
             ) : null}
             {user.relationship === 'CONNECTED' ? (
-              <span className="rounded-full bg-[#FF5A2F] px-3 py-2 text-xs uppercase tracking-[0.16em] text-[#0D0D0D]">
+              <span className="rounded-full bg-[var(--accent)] px-3 py-2 text-xs uppercase tracking-[0.16em] text-[var(--accent-contrast)]">
                 {relationshipLabel(user.relationship)}
               </span>
             ) : null}
             {user.relationship === 'PENDING_MANAGER_APPROVAL' ? (
-              <span className="rounded-full bg-[#FF5A2F]/10 px-3 py-2 text-xs uppercase tracking-[0.16em] text-[#FF5A2F]">
+              <span className="rounded-full bg-[var(--accent)]/10 px-3 py-2 text-xs uppercase tracking-[0.16em] text-[var(--accent)]">
                 {relationshipLabel(user.relationship)}
               </span>
             ) : null}

@@ -1,11 +1,11 @@
-﻿import { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/app/auth-store';
 import { useNotifications } from '@/features/notifications/use-notifications';
 import { getMessageSocket } from '@/features/messages/socket';
 import { api, assetUrl } from '@/lib/api';
-import logoMain from '@/assets/logo-main.png';
+import logoMain from '@/assets/logo-gold.png';
 
 type NavIconName = 'feed' | 'search' | 'messages' | 'notifications' | 'connections' | 'settings' | 'family' | 'admin';
 
@@ -37,7 +37,7 @@ type FamilyChildrenNavResponse = {
 
 const linkClass = ({ isActive }: { isActive: boolean }) =>
   `relative inline-flex items-center gap-3 rounded-full px-4 py-2 text-sm transition ${
-    isActive ? 'bg-[#FF5A2F] text-[#0D0D0D]' : 'text-[#F5F5F5]/70 hover:bg-white/12 hover:text-[#F5F5F5]'
+    isActive ? 'bg-[var(--accent)] text-[var(--accent-contrast)]' : 'text-[var(--text)]/70 hover:bg-white/12 hover:text-[var(--text)]'
   }`;
 
 const iconPaths: Record<NavIconName, string> = {
@@ -132,9 +132,9 @@ export const AppShell = () => {
   }
 
   return (
-    <div className="min-h-screen bg-transparent text-[#F5F5F5]">
+    <div className="min-h-screen bg-transparent text-[var(--text)]">
       <div className="mx-auto flex min-h-screen max-w-7xl flex-col gap-6 px-4 py-6 lg:grid lg:grid-cols-[18rem_minmax(0,1fr)] lg:px-6">
-        <aside className="rounded-[2rem] border border-white/10 bg-[#211f1d]/92 p-4 shadow-[0_24px_90px_-60px_rgba(255,90,47,0.42)] backdrop-blur lg:sticky lg:top-6 lg:h-[calc(100vh-3rem)] lg:overflow-y-auto">
+        <aside className="rounded-[2rem] border border-white/10 bg-[var(--bg-card)]/92 p-4 shadow-[var(--shadow-glow)] backdrop-blur lg:sticky lg:top-6 lg:h-[calc(100vh-3rem)] lg:overflow-y-auto">
           <div className="mb-8">
             <img alt="NewSocial" className="h-auto max-h-12 w-auto max-w-[180px] object-contain" src={logoMain} />
             <Link className="mt-3 flex items-center gap-3 rounded-[1.5rem] transition hover:bg-white/5" to={user ? `/profile/${user.username}` : '/feed'}>
@@ -145,13 +145,13 @@ export const AppShell = () => {
                   src={assetUrl(user.profileImageUrl) ?? user.profileImageUrl}
                 />
               ) : (
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/12 text-sm font-semibold text-[#F5F5F5]/65">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/12 text-sm font-semibold text-[var(--text)]/65">
                   {(user?.displayName ?? 'P').charAt(0).toUpperCase()}
                 </div>
               )}
               <div className="min-w-0">
                 <h1 className="truncate text-2xl font-semibold">{user?.displayName ?? 'Private network'}</h1>
-                <p className="mt-1 truncate text-sm text-[#F5F5F5]/60">@{user?.username}</p>
+                <p className="mt-1 truncate text-sm text-[var(--text)]/60">@{user?.username}</p>
               </div>
             </Link>
           </div>
@@ -161,22 +161,22 @@ export const AppShell = () => {
                 <NavIcon name={item.icon} />
                 <span>{item.label}</span>
                 {item.href === '/notifications' && hasUnreadNotifications ? (
-                  <span aria-label="Unread notifications" className="ml-auto h-2 w-2 rounded-full bg-[#FF5A2F]" />
+                  <span aria-label="Unread notifications" className="ml-auto h-2 w-2 rounded-full bg-[var(--accent)]" />
                 ) : null}
                 {item.href === '/messages' && hasUnreadMessages ? (
-                  <span aria-label="Unread messages" className="ml-auto h-2 w-2 rounded-full bg-[#FF5A2F]" />
+                  <span aria-label="Unread messages" className="ml-auto h-2 w-2 rounded-full bg-[var(--accent)]" />
                 ) : null}
                 {item.href === '/connections' && hasIncomingConnectionRequests ? (
-                  <span aria-label="Incoming connection requests" className="ml-auto h-2 w-2 rounded-full bg-[#FF5A2F]" />
+                  <span aria-label="Incoming connection requests" className="ml-auto h-2 w-2 rounded-full bg-[var(--accent)]" />
                 ) : null}
                 {item.href === '/family' && hasPendingFamilyApprovals ? (
-                  <span aria-label="Family approvals pending" className="ml-auto h-2 w-2 rounded-full bg-[#FF5A2F]" />
+                  <span aria-label="Family approvals pending" className="ml-auto h-2 w-2 rounded-full bg-[var(--accent)]" />
                 ) : null}
               </NavLink>
             ))}
           </nav>
           <button
-            className="mt-6 rounded-full border border-white/10 px-4 py-2 text-sm text-[#F5F5F5]/70 transition hover:bg-white/12 hover:text-[#F5F5F5]"
+            className="mt-6 rounded-full border border-white/10 px-4 py-2 text-sm text-[var(--text)]/70 transition hover:bg-white/12 hover:text-[var(--text)]"
             onClick={async () => {
               await logout();
               navigate('/login', { replace: true });
@@ -193,4 +193,3 @@ export const AppShell = () => {
     </div>
   );
 };
-

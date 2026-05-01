@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, assetUrl } from '@/lib/api';
@@ -81,13 +81,13 @@ export const ConnectionsPage = () => {
     <div className="grid gap-6 lg:grid-cols-2">
       <PageCard title="Connected">
         <input
-          className="mb-4 w-full rounded-[1.5rem] border border-white/10 bg-[#171514] px-4 py-3 text-sm text-[#F5F5F5] outline-none placeholder:text-[#F5F5F5]/45 focus:border-[#FF5A2F]"
+          className="mb-4 w-full rounded-[1.5rem] border border-white/10 bg-[var(--bg-elevated)] px-4 py-3 text-sm text-[var(--text)] outline-none placeholder:text-[var(--text)]/45 focus:border-[var(--accent)]"
           onChange={(event) => setConnectionSearch(event.target.value)}
           placeholder="Search connections"
           value={connectionSearch}
         />
-        {connectionsQuery.isLoading ? <p className="text-sm text-[#F5F5F5]/60">Loading connections...</p> : null}
-        {connectionsQuery.isError ? <p className="text-sm text-[#FF5A2F]">Could not load connections.</p> : null}
+        {connectionsQuery.isLoading ? <p className="text-sm text-[var(--text)]/60">Loading connections...</p> : null}
+        {connectionsQuery.isError ? <p className="text-sm text-[var(--accent)]">Could not load connections.</p> : null}
         {connectionsQuery.data?.connections.length ? (
           <div className="space-y-3">
             {filteredConnections.map((connection) => (
@@ -112,21 +112,21 @@ export const ConnectionsPage = () => {
                       src={assetUrl(connection.user.profileImageUrl) ?? connection.user.profileImageUrl}
                     />
                   ) : (
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/12 text-sm font-semibold text-[#F5F5F5]/65">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/12 text-sm font-semibold text-[var(--text)]/65">
                       {connection.user.displayName.charAt(0).toUpperCase()}
                     </div>
                   )}
                   <div className="min-w-0">
                     <p className="truncate font-medium">{connection.user.displayName}</p>
-                    <p className="truncate text-sm text-[#F5F5F5]/60">@{connection.user.username}</p>
+                    <p className="truncate text-sm text-[var(--text)]/60">@{connection.user.username}</p>
                   </div>
                 </div>
                 {connection.user.isFamilyConnection ? (
-                  <p className="mt-4 text-sm font-medium text-[#FF5A2F]">Family connection.</p>
+                  <p className="mt-4 text-sm font-medium text-[var(--accent)]">Family connection.</p>
                 ) : (
                   <div className="mt-4">
                     <button
-                      className="rounded-full border border-[#FF5A2F]/35 px-4 py-2 text-sm font-medium text-[#FF5A2F] disabled:opacity-60"
+                      className="rounded-full border border-[var(--accent)]/35 px-4 py-2 text-sm font-medium text-[var(--accent)] disabled:opacity-60"
                       disabled={busy}
                       onClick={(event) => {
                         event.stopPropagation();
@@ -145,25 +145,25 @@ export const ConnectionsPage = () => {
           </div>
         ) : null}
         {connectionsQuery.data && connectionsQuery.data.connections.length > 0 && filteredConnections.length === 0 ? (
-          <p className="text-sm text-[#F5F5F5]/60">No matching connections.</p>
+          <p className="text-sm text-[var(--text)]/60">No matching connections.</p>
         ) : null}
         {connectionsQuery.data && connectionsQuery.data.connections.length === 0 ? (
-          <p className="text-sm text-[#F5F5F5]/60">No connections yet.</p>
+          <p className="text-sm text-[var(--text)]/60">No connections yet.</p>
         ) : null}
       </PageCard>
       <PageCard title="Requests">
-        {connectionsQuery.isLoading ? <p className="text-sm text-[#F5F5F5]/60">Loading requests...</p> : null}
+        {connectionsQuery.isLoading ? <p className="text-sm text-[var(--text)]/60">Loading requests...</p> : null}
         {connectionsQuery.data ? (
           <div className="space-y-5">
             <section className="space-y-3">
               {connectionsQuery.data.pendingApprovals.length ? (
                 <>
-                  <h3 className="text-sm font-medium uppercase tracking-[0.18em] text-[#F5F5F5]/60">Waiting for family approval</h3>
+                  <h3 className="text-sm font-medium uppercase tracking-[0.18em] text-[var(--text)]/60">Waiting for family approval</h3>
                   {connectionsQuery.data.pendingApprovals.map((connection) => (
                     <div key={connection.id} className={cardClass}>
                       <p className="font-medium">{connection.user.displayName}</p>
-                      <p className="text-sm text-[#F5F5F5]/60">@{connection.user.username}</p>
-                      <p className="mt-2 text-sm text-[#F5F5F5]/60">
+                      <p className="text-sm text-[var(--text)]/60">@{connection.user.username}</p>
+                      <p className="mt-2 text-sm text-[var(--text)]/60">
                         Waiting for family approval.
                       </p>
                     </div>
@@ -173,16 +173,16 @@ export const ConnectionsPage = () => {
             </section>
             <section className="space-y-3">
               {connectionsQuery.data.incomingRequests.length ? (
-                <h3 className="text-sm font-medium uppercase tracking-[0.18em] text-[#F5F5F5]/60">Incoming requests</h3>
+                <h3 className="text-sm font-medium uppercase tracking-[0.18em] text-[var(--text)]/60">Incoming requests</h3>
               ) : null}
               {connectionsQuery.data.incomingRequests.length ? (
                 connectionsQuery.data.incomingRequests.map((request) => (
                   <div key={request.id} className={cardClass}>
                     <p className="font-medium">{request.user.displayName}</p>
-                    <p className="text-sm text-[#F5F5F5]/60">@{request.user.username}</p>
+                    <p className="text-sm text-[var(--text)]/60">@{request.user.username}</p>
                     <div className="mt-4">
                       <button
-                        className="rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-[#F5F5F5]/85 disabled:opacity-60"
+                        className="rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-[var(--text)]/85 disabled:opacity-60"
                         disabled={busy}
                         onClick={() => acceptRequestMutation.mutate(request.id)}
                         type="button"
@@ -193,7 +193,7 @@ export const ConnectionsPage = () => {
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-[#F5F5F5]/60">No incoming requests.</p>
+                <p className="text-sm text-[var(--text)]/60">No incoming requests.</p>
               )}
             </section>
           </div>

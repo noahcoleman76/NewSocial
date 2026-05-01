@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, assetUrl } from '@/lib/api';
@@ -180,7 +180,7 @@ export const FeedPage = () => {
       <PageCard title="Create post">
         {!composerOpen ? (
           <button
-            className="rounded-full bg-[#FF5A2F] px-5 py-3 text-sm font-medium text-[#0D0D0D] transition hover:bg-[#ff704d]"
+            className="rounded-full bg-[var(--accent)] px-5 py-3 text-sm font-medium text-[var(--accent-contrast)] transition hover:bg-[var(--accent-hover)]"
             onClick={() => setComposerOpen(true)}
             type="button"
           >
@@ -195,7 +195,7 @@ export const FeedPage = () => {
             }}
           >
             <textarea
-              className="h-32 w-full resize-none rounded-[1.5rem] border border-white/10 px-4 py-3 outline-none transition focus:border-[#FF5A2F]"
+              className="h-32 w-full resize-none rounded-[1.5rem] border border-white/10 px-4 py-3 outline-none transition focus:border-[var(--accent)]"
               maxLength={1000}
               onChange={(event) => setCaption(event.target.value)}
               placeholder="Write a post"
@@ -215,7 +215,7 @@ export const FeedPage = () => {
               />
               {files.length < 5 ? (
                 <button
-                  className="inline-flex items-center gap-2 rounded-full border border-white/10 px-5 py-3 text-sm font-medium text-[#F5F5F5]/85 transition hover:border-[#FF5A2F]/40 hover:bg-[#FF5A2F]/10 hover:text-[#FF5A2F]"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/10 px-5 py-3 text-sm font-medium text-[var(--text)]/85 transition hover:border-[var(--accent)]/40 hover:bg-[var(--accent)]/10 hover:text-[var(--accent)]"
                   onClick={() => photoInputRef.current?.click()}
                   type="button"
                 >
@@ -230,7 +230,7 @@ export const FeedPage = () => {
                       <img alt="" className="h-36 w-full object-cover" src={preview.url} />
                       <button
                         aria-label={`Remove ${preview.file.name}`}
-                        className="absolute right-2 top-2 rounded-full bg-[#0D0D0D]/80 px-3 py-1 text-xs font-medium text-[#F5F5F5] transition hover:bg-[#FF5A2F] hover:text-[#0D0D0D]"
+                        className="absolute right-2 top-2 rounded-full bg-[var(--accent-contrast)]/80 px-3 py-1 text-xs font-medium text-[var(--text)] transition hover:bg-[var(--accent)] hover:text-[var(--accent-contrast)]"
                         onClick={() => setFiles((current) => current.filter((_, fileIndex) => fileIndex !== preview.index))}
                         type="button"
                       >
@@ -242,18 +242,18 @@ export const FeedPage = () => {
               ) : null}
             </div>
             {createPostMutation.isError ? (
-              <p className="text-sm text-[#FF5A2F]">Could not create post.</p>
+              <p className="text-sm text-[var(--accent)]">Could not create post.</p>
             ) : null}
             <div className="flex flex-wrap gap-3">
               <button
-                className="rounded-full bg-[#FF5A2F] px-5 py-3 text-sm font-medium text-[#0D0D0D] disabled:opacity-60"
+                className="rounded-full bg-[var(--accent)] px-5 py-3 text-sm font-medium text-[var(--accent-contrast)] disabled:opacity-60"
                 disabled={createPostMutation.isPending || !canSubmitPost}
                 type="submit"
               >
                 {createPostMutation.isPending ? 'Posting...' : 'Post'}
               </button>
               <button
-                className="rounded-full border border-white/10 px-5 py-3 text-sm font-medium text-[#F5F5F5]/75 transition hover:bg-white/12"
+                className="rounded-full border border-white/10 px-5 py-3 text-sm font-medium text-[var(--text)]/75 transition hover:bg-white/12"
                 onClick={() => {
                   setCaption('');
                   setFiles([]);
@@ -268,10 +268,10 @@ export const FeedPage = () => {
         )}
       </PageCard>
       <PageCard title="Feed">
-        {feedQuery.isLoading ? <p className="text-sm text-[#F5F5F5]/60">Loading...</p> : null}
-        {feedQuery.isError ? <p className="text-sm text-[#FF5A2F]">Could not load feed.</p> : null}
+        {feedQuery.isLoading ? <p className="text-sm text-[var(--text)]/60">Loading...</p> : null}
+        {feedQuery.isError ? <p className="text-sm text-[var(--accent)]">Could not load feed.</p> : null}
         {reportStatus ? (
-          <p className={`mb-4 text-sm ${reportStatus === 'Post reported for admin review.' ? 'text-[#FF5A2F]' : 'text-[#FF5A2F]'}`}>
+          <p className={`mb-4 text-sm ${reportStatus === 'Post reported for admin review.' ? 'text-[var(--accent)]' : 'text-[var(--accent)]'}`}>
             {reportStatus}
           </p>
         ) : null}
@@ -283,16 +283,16 @@ export const FeedPage = () => {
                   <article key={item.postId} className="rounded-[1.5rem] border border-white/10 p-5">
                     <div className="flex items-center justify-between">
                       <div>
-                        <Link className="font-medium text-[#F5F5F5] hover:underline" to={`/profile/${item.author.username}`}>
+                        <Link className="font-medium text-[var(--text)] hover:underline" to={`/profile/${item.author.username}`}>
                           {item.author.displayName}
                         </Link>
 
                       </div>
-                      <p className="text-xs uppercase tracking-[0.2em] text-[#F5F5F5]/45">
+                      <p className="text-xs uppercase tracking-[0.2em] text-[var(--text)]/45">
                         {formatFeedDate(item.createdAt)}
                       </p>
                     </div>
-                    {item.caption ? <p className="mt-4 whitespace-pre-wrap text-sm leading-7 text-[#F5F5F5]/85">{item.caption}</p> : null}
+                    {item.caption ? <p className="mt-4 whitespace-pre-wrap text-sm leading-7 text-[var(--text)]/85">{item.caption}</p> : null}
                     {item.images.length ? (
                       <div className="mt-4 grid gap-3 sm:grid-cols-2">
                         {item.images.map((imageUrl) => (
@@ -300,23 +300,23 @@ export const FeedPage = () => {
                         ))}
                       </div>
                     ) : null}
-                    <div className="mt-4 flex items-center justify-between gap-3 text-sm text-[#F5F5F5]/60">
+                    <div className="mt-4 flex items-center justify-between gap-3 text-sm text-[var(--text)]/60">
                       <div className="flex flex-wrap gap-3">
                         <button
                           aria-label={item.likedByMe ? 'Unlike post' : 'Like post'}
-                          className="inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-sm text-[#F5F5F5]/85 transition hover:border-[#FF5A2F]/40 hover:bg-[#FF5A2F]/10 hover:text-[#FF5A2F] disabled:opacity-60"
+                          className="inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-sm text-[var(--text)]/85 transition hover:border-[var(--accent)]/40 hover:bg-[var(--accent)]/10 hover:text-[var(--accent)] disabled:opacity-60"
                           disabled={likeMutation.isPending}
                           onClick={() => likeMutation.mutate({ postId: item.postId, likedByMe: item.likedByMe })}
                           type="button"
                         >
-                          <span className={item.likedByMe ? 'text-[#FF5A2F]' : undefined}>
+                          <span className={item.likedByMe ? 'text-[var(--accent)]' : undefined}>
                             <FeedIcon name="like" />
                           </span>
                           <span>{item.likeCount}</span>
                         </button>
                         <Link
                           aria-label="Open comments"
-                          className="inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-[#F5F5F5]/85 transition hover:border-[#FF5A2F]/40 hover:bg-[#FF5A2F]/10 hover:text-[#FF5A2F]"
+                          className="inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-[var(--text)]/85 transition hover:border-[var(--accent)]/40 hover:bg-[var(--accent)]/10 hover:text-[var(--accent)]"
                           to={`/post/${item.postId}`}
                         >
                           <FeedIcon name="comment" />
@@ -326,17 +326,17 @@ export const FeedPage = () => {
                       <div className="relative">
                         <button
                           aria-label="Post options"
-                          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-[#F5F5F5]/75 transition hover:bg-white/12"
+                          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-[var(--text)]/75 transition hover:bg-white/12"
                           onClick={() => setOpenPostMenuId((current) => (current === item.postId ? null : item.postId))}
                           type="button"
                         >
                           <FeedIcon name="more" />
                         </button>
                         {openPostMenuId === item.postId ? (
-                          <div className="absolute bottom-12 right-0 z-10 min-w-36 rounded-2xl border border-white/10 bg-[#211f1d] p-2 shadow-[0_18px_50px_-25px_rgba(0,0,0,0.8)]">
+                          <div className="absolute bottom-12 right-0 z-10 min-w-36 rounded-2xl border border-white/10 bg-[var(--bg-card)] p-2 shadow-[0_18px_50px_-25px_rgba(0,0,0,0.8)]">
                             {item.canDelete ? (
                               <button
-                                className="w-full rounded-xl px-3 py-2 text-left text-sm text-[#FF5A2F] transition hover:bg-white/12 disabled:opacity-60"
+                                className="w-full rounded-xl px-3 py-2 text-left text-sm text-[var(--accent)] transition hover:bg-white/12 disabled:opacity-60"
                                 disabled={deletePostMutation.isPending}
                                 onClick={() => {
                                   if (window.confirm('Delete this post?')) {
@@ -350,7 +350,7 @@ export const FeedPage = () => {
                               </button>
                             ) : (
                               <button
-                                className="w-full rounded-xl px-3 py-2 text-left text-sm text-[#F5F5F5]/85 transition hover:bg-white/12 disabled:opacity-60"
+                                className="w-full rounded-xl px-3 py-2 text-left text-sm text-[var(--text)]/85 transition hover:bg-white/12 disabled:opacity-60"
                                 disabled={reportPostMutation.isPending}
                                 onClick={() => handleReportPost(item.postId)}
                                 type="button"
@@ -365,14 +365,14 @@ export const FeedPage = () => {
                   </article>
                 ) : (
                   <article key={item.id} className="rounded-[1.5rem] border border-dashed border-white/15 bg-white/7 p-5">
-                    <p className="text-xs uppercase tracking-[0.25em] text-[#F5F5F5]/45">Sponsored placement</p>
+                    <p className="text-xs uppercase tracking-[0.25em] text-[var(--text)]/45">Sponsored placement</p>
                     <h3 className="mt-2 text-lg font-semibold">{item.title}</h3>
-                    <p className="mt-2 text-sm text-[#F5F5F5]/75">{item.body}</p>
+                    <p className="mt-2 text-sm text-[var(--text)]/75">{item.body}</p>
                   </article>
                 ),
               )}
             </div>
-            <p className="mt-6 text-center text-sm text-[#F5F5F5]/60">{feedQuery.data.endMessage}</p>
+            <p className="mt-6 text-center text-sm text-[var(--text)]/60">{feedQuery.data.endMessage}</p>
           </>
         ) : null}
       </PageCard>

@@ -1,4 +1,4 @@
-﻿import type { PropsWithChildren } from 'react';
+import type { PropsWithChildren } from 'react';
 import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -34,10 +34,10 @@ const registerFormSchema = registerSchema
   });
 
 const inputClass =
-  'w-full rounded-2xl border border-white/10 px-4 py-3 outline-none transition focus:border-[#FF5A2F]';
+  'w-full rounded-2xl border border-white/10 px-4 py-3 outline-none transition focus:border-[var(--accent)]';
 
 const fieldError = (message?: string) =>
-  message ? <p className="mt-1 text-sm text-[#FF5A2F]">{message}</p> : null;
+  message ? <p className="mt-1 text-sm text-[var(--accent)]">{message}</p> : null;
 
 const AuthLayout = ({
   title,
@@ -109,7 +109,7 @@ const LoginForm = () => {
             {...form.register('password')}
           />
           <button
-            className="rounded-full border border-white/10 px-4 py-3 text-sm text-[#F5F5F5]/75 transition hover:bg-white/12/5"
+            className="rounded-full border border-white/10 px-4 py-3 text-sm text-[var(--text)]/75 transition hover:bg-white/12/5"
             onClick={() => setShowPassword((current) => !current)}
             type="button"
           >
@@ -118,9 +118,9 @@ const LoginForm = () => {
         </div>
         {fieldError(form.formState.errors.password?.message)}
       </div>
-      {errorMessage ? <p className="text-sm text-[#FF5A2F]">{errorMessage}</p> : null}
+      {errorMessage ? <p className="text-sm text-[var(--accent)]">{errorMessage}</p> : null}
       <button
-        className="rounded-full bg-[#FF5A2F] px-5 py-3 text-sm font-medium text-[#0D0D0D] disabled:opacity-60"
+        className="rounded-full bg-[var(--accent)] px-5 py-3 text-sm font-medium text-[var(--accent-contrast)] disabled:opacity-60"
         disabled={form.formState.isSubmitting}
         type="submit"
       >
@@ -198,7 +198,7 @@ const RegisterForm = () => {
         {fieldError(form.formState.errors.confirmPassword?.message)}
       </div>
       <button
-        className="rounded-full border border-white/10 px-4 py-3 text-sm text-[#F5F5F5]/75 transition hover:bg-white/12/5"
+        className="rounded-full border border-white/10 px-4 py-3 text-sm text-[var(--text)]/75 transition hover:bg-white/12/5"
         onClick={() => setShowPassword((current) => !current)}
         type="button"
       >
@@ -207,13 +207,13 @@ const RegisterForm = () => {
       <div>
         <input className={inputClass} placeholder="Family code (optional)" {...form.register('familyCode')} />
         {fieldError(form.formState.errors.familyCode?.message)}
-        <p className="mt-2 text-sm text-[#F5F5F5]/60">
+        <p className="mt-2 text-sm text-[var(--text)]/60">
           Optional. Use this to join a family.
         </p>
       </div>
-      {errorMessage ? <p className="text-sm text-[#FF5A2F]">{errorMessage}</p> : null}
+      {errorMessage ? <p className="text-sm text-[var(--accent)]">{errorMessage}</p> : null}
       <button
-        className="rounded-full bg-[#FF5A2F] px-5 py-3 text-sm font-medium text-[#0D0D0D] disabled:opacity-60"
+        className="rounded-full bg-[var(--accent)] px-5 py-3 text-sm font-medium text-[var(--accent-contrast)] disabled:opacity-60"
         disabled={form.formState.isSubmitting}
         type="submit"
       >
@@ -233,7 +233,7 @@ export const AuthPage = ({ mode }: { mode: 'login' | 'register' }) => (
     }
   >
     {mode === 'login' ? <LoginForm /> : <RegisterForm />}
-    <div className="mt-6 flex gap-4 text-sm text-[#F5F5F5]/60">
+    <div className="mt-6 flex gap-4 text-sm text-[var(--text)]/60">
       <Link to={mode === 'login' ? '/register' : '/login'}>
         {mode === 'login' ? 'Create an account' : 'Already have an account?'}
       </Link>
@@ -285,9 +285,9 @@ export const ChildAccessPage = () => {
           <input className={inputClass} placeholder="One-time access code" {...form.register('code')} />
           {fieldError(form.formState.errors.code?.message)}
         </div>
-        {errorMessage ? <p className="text-sm text-[#FF5A2F]">{errorMessage}</p> : null}
+        {errorMessage ? <p className="text-sm text-[var(--accent)]">{errorMessage}</p> : null}
         <button
-          className="rounded-full bg-[#FF5A2F] px-5 py-3 text-sm font-medium text-[#0D0D0D] disabled:opacity-60"
+          className="rounded-full bg-[var(--accent)] px-5 py-3 text-sm font-medium text-[var(--accent-contrast)] disabled:opacity-60"
           disabled={form.formState.isSubmitting}
           type="submit"
         >
@@ -352,9 +352,9 @@ export const ChildSetPasswordPage = () => {
           />
           {fieldError(form.formState.errors.confirmPassword?.message)}
         </div>
-        {errorMessage ? <p className="text-sm text-[#FF5A2F]">{errorMessage}</p> : null}
+        {errorMessage ? <p className="text-sm text-[var(--accent)]">{errorMessage}</p> : null}
         <button
-          className="rounded-full bg-[#FF5A2F] px-5 py-3 text-sm font-medium text-[#0D0D0D] disabled:opacity-60"
+          className="rounded-full bg-[var(--accent)] px-5 py-3 text-sm font-medium text-[var(--accent-contrast)] disabled:opacity-60"
           disabled={form.formState.isSubmitting}
           type="submit"
         >

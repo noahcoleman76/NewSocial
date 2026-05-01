@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { AxiosError } from 'axios';
@@ -245,13 +245,13 @@ export const SettingsPage = () => {
               {previewUrl ? (
                 <img alt="" className="h-28 w-28 rounded-full object-cover" src={previewUrl} />
               ) : (
-                <div className="flex h-28 w-28 items-center justify-center rounded-full bg-white/15 text-3xl font-semibold text-[#F5F5F5]/75">
+                <div className="flex h-28 w-28 items-center justify-center rounded-full bg-white/15 text-3xl font-semibold text-[var(--text)]/75">
                   {user.displayName.charAt(0).toUpperCase()}
                 </div>
               )}
-              <p className="mt-4 text-sm font-medium text-[#F5F5F5]">{user.displayName}</p>
-              <p className="mt-1 text-sm text-[#F5F5F5]/60">@{user.username}</p>
-              <label className="mt-4 block cursor-pointer rounded-full border border-white/10 px-4 py-3 text-center text-sm font-medium text-[#F5F5F5]/85 transition hover:bg-white/12">
+              <p className="mt-4 text-sm font-medium text-[var(--text)]">{user.displayName}</p>
+              <p className="mt-1 text-sm text-[var(--text)]/60">@{user.username}</p>
+              <label className="mt-4 block cursor-pointer rounded-full border border-white/10 px-4 py-3 text-center text-sm font-medium text-[var(--text)]/85 transition hover:bg-white/12">
                 Choose new profile image
                 <input
                   accept="image/png,image/jpeg,image/webp"
@@ -262,7 +262,7 @@ export const SettingsPage = () => {
               </label>
               {selectedImage ? (
                 <button
-                  className="mt-3 rounded-full bg-[#FF5A2F] px-4 py-2 text-sm font-medium text-[#0D0D0D] disabled:opacity-60"
+                  className="mt-3 rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-medium text-[var(--accent-contrast)] disabled:opacity-60"
                   disabled={imageMutation.isPending}
                   onClick={() => imageMutation.mutate()}
                   type="button"
@@ -285,7 +285,7 @@ export const SettingsPage = () => {
               }}
             >
               <label className="space-y-2">
-                <span className="block text-xs font-medium uppercase tracking-[0.16em] text-[#F5F5F5]/60">
+                <span className="block text-xs font-medium uppercase tracking-[0.16em] text-[var(--text)]/60">
                   Display Name
                 </span>
                 <input
@@ -295,7 +295,7 @@ export const SettingsPage = () => {
                 />
               </label>
               <label className="space-y-2">
-                <span className="block text-xs font-medium uppercase tracking-[0.16em] text-[#F5F5F5]/60">
+                <span className="block text-xs font-medium uppercase tracking-[0.16em] text-[var(--text)]/60">
                   Username
                 </span>
                 <input
@@ -305,7 +305,7 @@ export const SettingsPage = () => {
                 />
               </label>
               <label className="space-y-2">
-                <span className="block text-xs font-medium uppercase tracking-[0.16em] text-[#F5F5F5]/60">
+                <span className="block text-xs font-medium uppercase tracking-[0.16em] text-[var(--text)]/60">
                   Email
                 </span>
                 <input
@@ -316,7 +316,7 @@ export const SettingsPage = () => {
                 />
               </label>
               <label className="space-y-2 md:col-span-2">
-                <span className="block text-xs font-medium uppercase tracking-[0.16em] text-[#F5F5F5]/60">
+                <span className="block text-xs font-medium uppercase tracking-[0.16em] text-[var(--text)]/60">
                   Bio
                 </span>
                 <textarea
@@ -325,13 +325,13 @@ export const SettingsPage = () => {
                   onChange={(event) => setProfileFields((current) => ({ ...current, bio: event.target.value }))}
                   value={profileFields.bio}
                 />
-                <p className="text-right text-xs text-[#F5F5F5]/50">
+                <p className="text-right text-xs text-[var(--text)]/50">
                   {profileFields.bio.length}/{bioMaxLength}
                 </p>
               </label>
               <div className="md:col-span-2">
                 <button
-                  className="rounded-full bg-[#FF5A2F] px-5 py-3 text-sm font-medium text-[#0D0D0D] disabled:opacity-60"
+                  className="rounded-full bg-[var(--accent)] px-5 py-3 text-sm font-medium text-[var(--accent-contrast)] disabled:opacity-60"
                   disabled={!canSaveProfile || profileMutation.isPending}
                   type="submit"
                 >
@@ -340,7 +340,7 @@ export const SettingsPage = () => {
               </div>
             </form>
             {profileMessage ? (
-              <p className={`text-sm ${profileMessage.includes('saved') || profileMessage.includes('updated') ? 'text-[#FF5A2F]' : 'text-[#FF5A2F]'}`}>
+              <p className={`text-sm ${profileMessage.includes('saved') || profileMessage.includes('updated') ? 'text-[var(--accent)]' : 'text-[var(--accent)]'}`}>
                 {profileMessage}
               </p>
             ) : null}
@@ -372,13 +372,13 @@ export const SettingsPage = () => {
               value={familyCode}
             />
             <button
-              className="rounded-full bg-[#FF5A2F] px-5 py-3 text-sm font-medium text-[#0D0D0D] disabled:opacity-60"
+              className="rounded-full bg-[var(--accent)] px-5 py-3 text-sm font-medium text-[var(--accent-contrast)] disabled:opacity-60"
               disabled={!familyCode.trim() || familyCodeMutation.isPending}
               type="submit"
             >
               {familyCodeMutation.isPending ? 'Joining...' : 'Apply code'}
             </button>
-            {familyCodeMessage ? <p className="text-sm text-[#FF5A2F]">{familyCodeMessage}</p> : null}
+            {familyCodeMessage ? <p className="text-sm text-[var(--accent)]">{familyCodeMessage}</p> : null}
           </form>
         </PageCard>
       ) : null}
@@ -386,7 +386,7 @@ export const SettingsPage = () => {
       <PageCard title="Password">
         <div className="space-y-4">
           <button
-            className="rounded-full border border-white/10 px-5 py-3 text-sm font-medium text-[#F5F5F5]/85 transition hover:bg-white/12/5"
+            className="rounded-full border border-white/10 px-5 py-3 text-sm font-medium text-[var(--text)]/85 transition hover:bg-white/12/5"
             onClick={() => {
               setPasswordMessage(null);
               setShowPasswordFields((current) => !current);
@@ -433,14 +433,14 @@ export const SettingsPage = () => {
               />
               <div className="flex flex-wrap gap-3 md:col-span-2">
                 <button
-                  className="rounded-full border border-white/10 px-5 py-3 text-sm font-medium text-[#F5F5F5]/85 transition hover:bg-white/12/5"
+                  className="rounded-full border border-white/10 px-5 py-3 text-sm font-medium text-[var(--text)]/85 transition hover:bg-white/12/5"
                   onClick={() => setShowPasswordValues((current) => !current)}
                   type="button"
                 >
                   {showPasswordValues ? 'Hide passwords' : 'Show passwords'}
                 </button>
                 <button
-                  className="rounded-full bg-[#FF5A2F] px-5 py-3 text-sm font-medium text-[#0D0D0D] disabled:opacity-60"
+                  className="rounded-full bg-[var(--accent)] px-5 py-3 text-sm font-medium text-[var(--accent-contrast)] disabled:opacity-60"
                   disabled={
                     passwordMutation.isPending ||
                     !passwordFields.currentPassword ||
@@ -455,7 +455,7 @@ export const SettingsPage = () => {
             </form>
           ) : null}
           {passwordMessage ? (
-            <p className={`text-sm ${passwordMessage === 'Password changed.' ? 'text-[#FF5A2F]' : 'text-[#FF5A2F]'}`}>
+            <p className={`text-sm ${passwordMessage === 'Password changed.' ? 'text-[var(--accent)]' : 'text-[var(--accent)]'}`}>
               {passwordMessage}
             </p>
           ) : null}
@@ -468,7 +468,7 @@ export const SettingsPage = () => {
             {user.hasChildren ? (
               <div className="flex flex-wrap gap-3">
                 <button
-                  className="rounded-full border border-[#FF5A2F]/35 px-5 py-3 text-sm font-medium text-[#FF5A2F] disabled:opacity-60"
+                  className="rounded-full border border-[var(--accent)]/35 px-5 py-3 text-sm font-medium text-[var(--accent)] disabled:opacity-60"
                   disabled={deleteAccountMutation.isPending}
                   onClick={() => handleDeleteAccount('DELETE_CHILDREN')}
                   type="button"
@@ -476,7 +476,7 @@ export const SettingsPage = () => {
                   {deleteAccountMutation.isPending ? 'Deleting...' : 'Delete children and account'}
                 </button>
                 <button
-                  className="rounded-full border border-[#FF5A2F]/35 px-5 py-3 text-sm font-medium text-[#FF5A2F] disabled:opacity-60"
+                  className="rounded-full border border-[var(--accent)]/35 px-5 py-3 text-sm font-medium text-[var(--accent)] disabled:opacity-60"
                   disabled={deleteAccountMutation.isPending}
                   onClick={() => handleDeleteAccount('RELEASE_CHILDREN')}
                   type="button"
@@ -486,7 +486,7 @@ export const SettingsPage = () => {
               </div>
             ) : (
               <button
-                className="rounded-full border border-[#FF5A2F]/35 px-5 py-3 text-sm font-medium text-[#FF5A2F] disabled:opacity-60"
+                className="rounded-full border border-[var(--accent)]/35 px-5 py-3 text-sm font-medium text-[var(--accent)] disabled:opacity-60"
                 disabled={deleteAccountMutation.isPending}
                 onClick={() => handleDeleteAccount()}
                 type="button"
@@ -494,7 +494,7 @@ export const SettingsPage = () => {
                 {deleteAccountMutation.isPending ? 'Deleting...' : 'Delete account'}
               </button>
             )}
-            {deleteMessage ? <p className="text-sm text-[#FF5A2F]">{deleteMessage}</p> : null}
+            {deleteMessage ? <p className="text-sm text-[var(--accent)]">{deleteMessage}</p> : null}
           </div>
         </PageCard>
       ) : null}

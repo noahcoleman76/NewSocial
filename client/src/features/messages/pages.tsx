@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, assetUrl } from '@/lib/api';
@@ -139,14 +139,14 @@ export const MessagesPage = () => {
     <PageCard title="Messages">
       <div className="mb-5 flex items-center justify-end gap-4">
         <Link
-          className="rounded-full bg-[#FF5A2F] px-4 py-2 text-sm font-medium text-[#0D0D0D] transition hover:bg-[#ff704d]"
+          className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-medium text-[var(--accent-contrast)] transition hover:bg-[var(--accent-hover)]"
           to="/messages/new"
         >
           New message
         </Link>
       </div>
-      {conversationsQuery.isLoading ? <p className="text-sm text-[#F5F5F5]/60">Loading conversations...</p> : null}
-      {conversationsQuery.isError ? <p className="text-sm text-[#FF5A2F]">Could not load conversations.</p> : null}
+      {conversationsQuery.isLoading ? <p className="text-sm text-[var(--text)]/60">Loading conversations...</p> : null}
+      {conversationsQuery.isError ? <p className="text-sm text-[var(--accent)]">Could not load conversations.</p> : null}
       {conversationsQuery.data?.length ? (
         <div className="space-y-3">
           {conversationsQuery.data.map((conversation) => (
@@ -164,20 +164,20 @@ export const MessagesPage = () => {
                       src={assetUrl(conversation.participant.profileImageUrl) ?? conversation.participant.profileImageUrl}
                     />
                   ) : (
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/12 text-sm font-semibold text-[#F5F5F5]/65">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/12 text-sm font-semibold text-[var(--text)]/65">
                       {summaryLabel(conversation.participant).charAt(0).toUpperCase()}
                     </div>
                   )}
                   <div className="min-w-0">
-                    <p className="truncate font-medium text-[#F5F5F5]">{summaryLabel(conversation.participant)}</p>
-                    <p className="mt-1 truncate text-sm text-[#F5F5F5]/60">{summaryMeta(conversation.participant)}</p>
+                    <p className="truncate font-medium text-[var(--text)]">{summaryLabel(conversation.participant)}</p>
+                    <p className="mt-1 truncate text-sm text-[var(--text)]/60">{summaryMeta(conversation.participant)}</p>
                   </div>
                 </div>
                 <span
                   className={`rounded-full px-3 py-1 text-xs uppercase tracking-[0.16em] ${
                     conversation.unread
-                      ? 'bg-[#FF5A2F] text-[#0D0D0D]'
-                      : 'border border-white/10 text-[#F5F5F5]/60'
+                      ? 'bg-[var(--accent)] text-[var(--accent-contrast)]'
+                      : 'border border-white/10 text-[var(--text)]/60'
                   }`}
                 >
                   {conversation.unread ? 'Unread' : 'Read'}
@@ -188,7 +188,7 @@ export const MessagesPage = () => {
         </div>
       ) : null}
       {conversationsQuery.data && conversationsQuery.data.length === 0 ? (
-        <div className="rounded-[1.5rem] border border-dashed border-white/15 bg-white/7 p-5 text-sm leading-7 text-[#F5F5F5]/75">
+        <div className="rounded-[1.5rem] border border-dashed border-white/15 bg-white/7 p-5 text-sm leading-7 text-[var(--text)]/75">
           No conversations yet.
         </div>
       ) : null}
@@ -243,8 +243,8 @@ export const NewMessagePage = () => {
           value={query}
         />
 
-        {connectionsQuery.isLoading ? <p className="text-sm text-[#F5F5F5]/60">Loading connections...</p> : null}
-        {connectionsQuery.isError ? <p className="text-sm text-[#FF5A2F]">Could not load connections.</p> : null}
+        {connectionsQuery.isLoading ? <p className="text-sm text-[var(--text)]/60">Loading connections...</p> : null}
+        {connectionsQuery.isError ? <p className="text-sm text-[var(--accent)]">Could not load connections.</p> : null}
 
         {filteredConnections.length ? (
           <div className="space-y-3">
@@ -257,10 +257,10 @@ export const NewMessagePage = () => {
                 type="button"
               >
                 <div>
-                  <p className="font-medium text-[#F5F5F5]">{connection.user.displayName}</p>
-                  <p className="mt-1 text-sm text-[#F5F5F5]/60">@{connection.user.username}</p>
+                  <p className="font-medium text-[var(--text)]">{connection.user.displayName}</p>
+                  <p className="mt-1 text-sm text-[var(--text)]/60">@{connection.user.username}</p>
                 </div>
-                <span className="rounded-full border border-white/10 px-3 py-2 text-xs uppercase tracking-[0.16em] text-[#F5F5F5]/60">
+                <span className="rounded-full border border-white/10 px-3 py-2 text-xs uppercase tracking-[0.16em] text-[var(--text)]/60">
                   Message
                 </span>
               </button>
@@ -269,7 +269,7 @@ export const NewMessagePage = () => {
         ) : null}
 
         {connectionsQuery.data && filteredConnections.length === 0 ? (
-          <div className="rounded-[1.5rem] border border-dashed border-white/15 bg-white/7 p-5 text-sm leading-7 text-[#F5F5F5]/75">
+          <div className="rounded-[1.5rem] border border-dashed border-white/15 bg-white/7 p-5 text-sm leading-7 text-[var(--text)]/75">
             No matches.
           </div>
         ) : null}
@@ -372,10 +372,10 @@ export const ConversationPage = () => {
   const recipientLabel = participant ? `@${participant.username}` : 'Deleted User';
 
   return (
-    <section className="overflow-hidden rounded-[2rem] border border-white/10 bg-[#211f1d]/92 shadow-[0_24px_90px_-60px_rgba(255,90,47,0.42)]">
-      <div className="sticky top-0 z-20 flex items-center gap-4 border-b border-white/10 bg-[#211f1d]/95 px-4 py-4 shadow-[0_18px_35px_-30px_rgba(0,0,0,0.85)] backdrop-blur">
+    <section className="overflow-hidden rounded-[2rem] border border-white/10 bg-[var(--bg-card)]/92 shadow-[var(--shadow-glow)]">
+      <div className="sticky top-0 z-20 flex items-center gap-4 border-b border-white/10 bg-[var(--bg-card)]/95 px-4 py-4 shadow-[0_18px_35px_-30px_rgba(0,0,0,0.85)] backdrop-blur">
         <Link
-          className="inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-2 text-sm text-[#F5F5F5]/80 transition hover:border-[#FF5A2F]/40 hover:bg-[#FF5A2F]/10 hover:text-[#FF5A2F]"
+          className="inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-2 text-sm text-[var(--text)]/80 transition hover:border-[var(--accent)]/40 hover:bg-[var(--accent)]/10 hover:text-[var(--accent)]"
           to="/messages"
         >
           <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.9" viewBox="0 0 24 24">
@@ -395,24 +395,24 @@ export const ConversationPage = () => {
                 src={assetUrl(participant.profileImageUrl) ?? participant.profileImageUrl}
               />
             ) : (
-              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white/12 text-sm font-semibold text-[#F5F5F5]/65">
+              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white/12 text-sm font-semibold text-[var(--text)]/65">
                 {participant.displayName.charAt(0).toUpperCase()}
               </div>
             )}
             <div className="min-w-0">
-              <p className="truncate text-base font-semibold text-[#F5F5F5]">{participant.displayName}</p>
-              <p className="truncate text-sm text-[#F5F5F5]/55">{recipientLabel}</p>
+              <p className="truncate text-base font-semibold text-[var(--text)]">{participant.displayName}</p>
+              <p className="truncate text-sm text-[var(--text)]/55">{recipientLabel}</p>
             </div>
           </Link>
         ) : (
           <div className="min-w-0">
-            <p className="truncate text-base font-semibold text-[#F5F5F5]">{recipientLabel}</p>
+            <p className="truncate text-base font-semibold text-[var(--text)]">{recipientLabel}</p>
           </div>
         )}
       </div>
 
-      {conversationQuery.isLoading ? <p className="p-4 text-sm text-[#F5F5F5]/60">Loading conversation...</p> : null}
-      {conversationQuery.isError ? <p className="p-4 text-sm text-[#FF5A2F]">Could not load conversation.</p> : null}
+      {conversationQuery.isLoading ? <p className="p-4 text-sm text-[var(--text)]/60">Loading conversation...</p> : null}
+      {conversationQuery.isError ? <p className="p-4 text-sm text-[var(--accent)]">Could not load conversation.</p> : null}
       {conversationQuery.data ? (
         <>
           <div className="min-h-[58vh] space-y-2 px-4 py-5 pb-8">
@@ -422,8 +422,8 @@ export const ConversationPage = () => {
                   <div
                     className={`max-w-[75%] rounded-[1.35rem] px-3 py-2 text-sm leading-6 shadow-[0_14px_38px_-30px_rgba(0,0,0,0.9)] ${
                       message.isMine
-                        ? 'rounded-br-md bg-[#E4572E] text-white'
-                        : 'rounded-bl-md bg-white/10 text-[#F5F5F5]'
+                        ? 'rounded-br-md bg-[var(--accent-strong)] text-white'
+                        : 'rounded-bl-md bg-white/10 text-[var(--text)]'
                     }`}
                     title={new Date(message.createdAt).toLocaleString()}
                   >
@@ -448,7 +448,7 @@ export const ConversationPage = () => {
                 </div>
               ))
             ) : (
-              <div className="rounded-[1.5rem] border border-dashed border-white/15 bg-white/7 p-5 text-sm leading-7 text-[#F5F5F5]/75">
+              <div className="rounded-[1.5rem] border border-dashed border-white/15 bg-white/7 p-5 text-sm leading-7 text-[var(--text)]/75">
                 No messages yet.
               </div>
             )}
@@ -456,15 +456,15 @@ export const ConversationPage = () => {
           </div>
 
           <form
-            className="sticky bottom-0 z-10 border-t border-white/10 bg-[#211f1d]/95 px-4 py-4 backdrop-blur"
+            className="sticky bottom-0 z-10 border-t border-white/10 bg-[var(--bg-card)]/95 px-4 py-4 backdrop-blur"
             onSubmit={(event) => {
               event.preventDefault();
               setSubmitError(null);
               sendMutation.mutate();
             }}
           >
-            <div className="flex items-center gap-2 rounded-full border border-white/10 bg-[#171514] p-2">
-              <label className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full text-[#F5F5F5]/70 transition hover:bg-white/10 hover:text-[#FF5A2F]">
+            <div className="flex items-center gap-2 rounded-full border border-white/10 bg-[var(--bg-elevated)] p-2">
+              <label className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full text-[var(--text)]/70 transition hover:bg-white/10 hover:text-[var(--accent)]">
                 <span className="sr-only">Add images</span>
                 <svg aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.9" viewBox="0 0 24 24">
                   <path d="M4 7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V7Z" />
@@ -483,7 +483,7 @@ export const ConversationPage = () => {
                 />
               </label>
               <input
-                className="min-w-0 flex-1 appearance-none border-0 bg-transparent px-2 text-sm text-[#F5F5F5] outline-none ring-0 shadow-none placeholder:text-[#F5F5F5]/45"
+                className="min-w-0 flex-1 appearance-none border-0 bg-transparent px-2 text-sm text-[var(--text)] outline-none ring-0 shadow-none placeholder:text-[var(--text)]/45"
                 data-unstyled="true"
                 maxLength={1000}
                 onChange={(event) => setBody(event.target.value)}
@@ -491,7 +491,7 @@ export const ConversationPage = () => {
                 value={body}
               />
               <button
-                className="shrink-0 rounded-full bg-[#FF5A2F] px-4 py-2 text-sm font-medium text-[#0D0D0D] transition hover:bg-[#ff704d] disabled:opacity-50"
+                className="shrink-0 rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-medium text-[var(--accent-contrast)] transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
                 disabled={sendMutation.isPending || (!body.trim() && files.length === 0)}
                 type="submit"
               >
@@ -499,18 +499,17 @@ export const ConversationPage = () => {
               </button>
             </div>
             {files.length ? (
-              <p className="mt-2 px-3 text-xs text-[#F5F5F5]/55">
+              <p className="mt-2 px-3 text-xs text-[var(--text)]/55">
                 {files.length} image{files.length === 1 ? '' : 's'} ready to send
               </p>
             ) : null}
-            {submitError ? <p className="mt-2 px-3 text-sm text-[#FF5A2F]">{submitError}</p> : null}
+            {submitError ? <p className="mt-2 px-3 text-sm text-[var(--accent)]">{submitError}</p> : null}
           </form>
         </>
       ) : null}
     </section>
   );
 };
-
 
 
 

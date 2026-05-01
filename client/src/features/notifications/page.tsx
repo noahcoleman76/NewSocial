@@ -1,4 +1,4 @@
-﻿import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { PageCard } from '@/components/page-card';
@@ -40,7 +40,7 @@ export const NotificationsPage = () => {
       <div className="mb-4">
         <div className="flex flex-wrap gap-3">
           <button
-            className="rounded-full border border-white/10 px-4 py-2 text-sm text-[#F5F5F5]/85 disabled:opacity-60"
+            className="rounded-full border border-white/10 px-4 py-2 text-sm text-[var(--text)]/85 disabled:opacity-60"
             disabled={markAllReadMutation.isPending}
             onClick={() => markAllReadMutation.mutate()}
             type="button"
@@ -48,7 +48,7 @@ export const NotificationsPage = () => {
             {markAllReadMutation.isPending ? 'Updating...' : 'Mark all read'}
           </button>
           <button
-            className="rounded-full border border-white/10 px-4 py-2 text-sm text-[#F5F5F5]/85 disabled:opacity-60"
+            className="rounded-full border border-white/10 px-4 py-2 text-sm text-[var(--text)]/85 disabled:opacity-60"
             disabled={!notificationsQuery.data?.length || clearAllMutation.isPending}
             onClick={() => clearAllMutation.mutate()}
             type="button"
@@ -57,10 +57,10 @@ export const NotificationsPage = () => {
           </button>
         </div>
       </div>
-      {notificationsQuery.isLoading ? <p className="text-sm text-[#F5F5F5]/60">Loading notifications...</p> : null}
-      {notificationsQuery.isError ? <p className="text-sm text-[#FF5A2F]">Could not load notifications.</p> : null}
+      {notificationsQuery.isLoading ? <p className="text-sm text-[var(--text)]/60">Loading notifications...</p> : null}
+      {notificationsQuery.isError ? <p className="text-sm text-[var(--accent)]">Could not load notifications.</p> : null}
       {notificationsQuery.data?.length === 0 ? (
-        <p className="text-sm text-[#F5F5F5]/60">No notifications.</p>
+        <p className="text-sm text-[var(--text)]/60">No notifications.</p>
       ) : null}
       <div className="space-y-3">
         {notificationsQuery.data?.map((notification) => (
@@ -77,12 +77,12 @@ export const NotificationsPage = () => {
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="font-medium">{notification.title}</p>
-                <p className="mt-1 text-sm text-[#F5F5F5]/60">{notification.body}</p>
-                <p className="mt-2 text-xs uppercase tracking-[0.16em] text-[#F5F5F5]/45">
+                <p className="mt-1 text-sm text-[var(--text)]/60">{notification.body}</p>
+                <p className="mt-2 text-xs uppercase tracking-[0.16em] text-[var(--text)]/45">
                   {new Date(notification.createdAt).toLocaleString()}
                 </p>
               </div>
-              {!notification.read ? <span className="h-3 w-3 rounded-full bg-[#FF5A2F]" /> : null}
+              {!notification.read ? <span className="h-3 w-3 rounded-full bg-[var(--accent)]" /> : null}
             </div>
           </Link>
         ))}
