@@ -8,12 +8,44 @@ import { notFoundHandler } from '@/middleware/not-found';
 import { resolveUploadDir } from '@/modules/uploads/upload-path';
 import { registerRoutes } from '@/routes';
 
+const allowedOrigins = () => new Set([env.CLIENT_URL, ...env.CLIENT_ORIGINS]);
+
+const isAllowedVercelPreview = (origin: string) => {
+  if (env.NODE_ENV !== 'production') {
+    return false;
+  }
+
+  try {
+    const { hostname } = new URL(origin);
+    return hostname === 'new-social-client.vercel.app' || hostname.startsWith('new-social-client-');
+  } catch {
+    return false;
+  }
+};
+
+const isAllowedOrigin = (origin: string) => {
+  const normalizedOrigin = origin.replace(/\/+$/, '');
+
+  if (allowedOrigins().has(normalizedOrigin)) {
+    return true;
+  }
+
+  return isAllowedVercelPreview(normalizedOrigin);
+};
+
 export const createApp = () => {
   const app = express();
 
   app.use(
     cors({
-      origin: env.CLIENT_URL,
+      origin: (origin, callback) => {
+        if (!origin || isAllowedOrigin(origin)) {
+          callback(null, true);
+          return;
+        }
+
+        callback(new Error('Not allowed by CORS'));
+      },
       credentials: true,
     }),
   );
