@@ -13,6 +13,7 @@ import {
 import { useAuthStore } from '@/app/auth-store';
 import { useAuthBootstrap } from '@/app/use-auth-bootstrap';
 import { PageCard } from '@/components/page-card';
+import logoGold from '@/assets/logo-gold.png';
 
 const setPasswordSchema = childSetPasswordSchema
   .pick({ password: true })
@@ -46,6 +47,10 @@ const AuthLayout = ({
 }: PropsWithChildren<{ title: string; subtitle: string }>) => (
   <div className="flex min-h-screen items-center justify-center px-4 py-10">
     <div className="w-full max-w-xl">
+      <div className="mb-6 flex flex-col items-center text-center">
+        <img alt="NewSocial" className="h-auto max-h-16 w-auto max-w-[220px] object-contain" src={logoGold} />
+        <p className="mt-3 text-lg font-semibold tracking-[0.18em] text-[var(--text)]">NEWSOCIAL</p>
+      </div>
       <PageCard title={title} subtitle={subtitle}>
         {children}
       </PageCard>

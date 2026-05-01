@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { AxiosError } from 'axios';
@@ -498,6 +499,16 @@ export const SettingsPage = () => {
           </div>
         </PageCard>
       ) : null}
+      <PageCard title="Legal">
+        <div className="flex flex-wrap gap-4 text-sm text-[var(--text)]/60">
+          <Link className="transition hover:text-[var(--accent)]" to="/terms">
+            Terms & Conditions
+          </Link>
+          <Link className="transition hover:text-[var(--accent)]" to="/privacy">
+            Privacy Policy
+          </Link>
+        </div>
+      </PageCard>
     </div>
   );
 };

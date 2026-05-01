@@ -1,6 +1,4 @@
 move logout button
-logo on login and signup
-terms and conditioin
 
 Server
 Database

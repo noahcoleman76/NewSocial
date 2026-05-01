@@ -1,4 +1,4 @@
-﻿import { createBrowserRouter, Navigate } from 'react-router-dom';
+﻿import { createBrowserRouter } from 'react-router-dom';
 import { AppShell } from '@/components/app-shell';
 import { ProtectedRoute } from '@/components/protected-route';
 import { AuthPage } from '@/features/auth/pages';
@@ -18,12 +18,15 @@ import {
   FamilyChildConnectionsPage,
 } from '@/features/family/pages';
 import { AdminHomePage, AdminReportsPage, AdminUsersPage, AdminAuditPage } from '@/features/admin/pages';
+import { LandingPage, PrivacyPage, TermsPage } from '@/features/marketing/pages';
 
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: <Navigate to="/feed" replace />,
+    element: <LandingPage />,
   },
+  { path: '/terms', element: <TermsPage /> },
+  { path: '/privacy', element: <PrivacyPage /> },
   { path: '/login', element: <AuthPage mode="login" /> },
   { path: '/register', element: <AuthPage mode="register" /> },
   {
@@ -76,6 +79,7 @@ export const router = createBrowserRouter([
     ],
   },
 ]);
+
 
 
 
