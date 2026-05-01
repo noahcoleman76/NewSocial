@@ -7,6 +7,11 @@ dotenv.config({
   path: path.resolve(process.cwd(), '../.env'),
 });
 
+dotenv.config({
+  path: path.resolve(process.cwd(), '.env'),
+  override: true,
+});
+
 const prisma = new PrismaClient();
 
 async function main() {

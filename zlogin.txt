@@ -18,3 +18,14 @@ Use any of these seeded accounts from /C:/Users/noahco/OneDrive - NICE Ltd/Deskt
   - disabled@newsocial.local
   - disabled-parent@newsocial.local
   - disabled-child@newsocial.local
+
+
+For NEON:
+ admin@newsocial.local
+  Password123!
+
+  parent@newsocial.local
+  Password123!
+
+  alex@newsocial.local
+  Password123!

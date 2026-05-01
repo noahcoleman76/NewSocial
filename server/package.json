@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
     "build": "prisma generate && tsc -p tsconfig.json --noEmit",
+    "render-build": "npm install --include=dev && npm run build",
     "lint": "eslint \"src/**/*.ts\"",
     "test": "vitest run",
     "prisma:generate": "prisma generate",
@@ -27,6 +29,7 @@
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.2",
     "socket.io": "^4.8.1",
+    "tsx": "^4.21.0",
     "zod": "^4.1.12"
   },
   "devDependencies": {
@@ -40,7 +43,6 @@
     "@vitest/coverage-v8": "^4.0.8",
     "eslint": "^9.39.4",
     "prisma": "^6.19.0",
-    "tsx": "^4.20.6",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.58.2",
     "vitest": "^4.0.8"
