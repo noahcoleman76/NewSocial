@@ -1,4 +1,6 @@
 move logout button
+have link to profile page for incoming requests
+meta data for sharing
 
 Server
 Database
