@@ -1,6 +1,7 @@
 move logout button
 have link to profile page for incoming requests
 meta data for sharing
+mobile view
 
 Server
 Database
